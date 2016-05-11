@@ -11,6 +11,7 @@ module.exports = function(server){
       socket.chanel = data.mid
       var chanel = data.mid
       userlist[socket.name] = socket
+
       console.log(Object.keys(userlist));
       User.update({name:socket.name},{$set:{watching:chanel}},function(err,user){
         if(err){console.log(err);}
@@ -57,7 +58,11 @@ module.exports = function(server){
               newWhsiperMsg.save(function(err){
                 if(err){console.log(err);}
                 socket.emit('whisper', {msg: msg,msg_from:socket.name, msg_to:name});
-                userlist[name].emit('whisper', {msg: msg,msg_from:socket.name, msg_to:name});
+                for(var i = 0; i < userlist.length; i++){
+                  if(name == userlist[i]){
+                    userlist[name].emit('whisper', {msg: msg,msg_from:socket.name, msg_to:name});
+                  }
+                }
               })
             }else {
                callback('错误！user not found！');
