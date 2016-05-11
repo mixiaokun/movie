@@ -113,7 +113,6 @@ block content
       var name = profile.getName();
       var email = profile.getEmail();
       var image_url = profile.getImageUrl();
-      console.log(id_token);
       $.ajax({
         type:"POST",
         url:"/user/signup",
@@ -126,7 +125,7 @@ block content
         dataType:"json",
         success:function(data){
           if(data.success){
-            $('<a>').attr({'href':'/forget'})
+            $('<a>').attr({'href':'/user/forget'})
             .text('建议您使用独立的密码。')
             .appendTo($('.changepasswd'))
             $('.googleSignupInfor').text(data.success)

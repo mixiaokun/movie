@@ -179,8 +179,6 @@ exports.savePoster = function(req, res, next) {
   }
 }
 
-//批量导入豆瓣数据
-
 exports.saveBatch = function(req,res){
   var title =req.body.title
   var doctor =req.body.doctor
@@ -276,11 +274,11 @@ exports.getBilibiliVideoUrl = function(req,res){
   var baseurl = "http://www.bilibili.com/video/" + mid
   const getXmlFileName = exec('you-get -u ' + baseurl, function(error, stdout, stderr){
     if(error){
-      console.log('--处理视频信息出错--');
+      console.log('处理视频信息出错');
       res.json({err:mid})
     }
     else if(stderr){
-      console.log('--读取视频信息出错--');
+      console.log('读取视频信息出错');
       res.json({err:mid})
     }
     else if(stdout){
@@ -357,7 +355,7 @@ exports.getBilibiliVideoUrl = function(req,res){
               })
             },function(val){
               console.log('transcode err');
-              res.jsong({err:mid})
+              res.json({err:mid})
             })
           },function(val){
             // 异常

@@ -24,19 +24,15 @@ block content
           input.endTime(type='text' class="form-control")
           .input-group-btn
             button.btn.btn-default.submitRank 提交
-        br  
-        .videoContent
-          video.hidden(style="width:100%;" data-setup="{}" controls="controls" preload="preload")
-            source(type="video/mp4")
-            
-        .danmuPlayer.hidden(style="width:100%;height:400px;background:#000;")
+        br
+        .danmuPlayer(style="width:100%;background:#000;")
+          video.player(style="width:100%;" data-setup="{}" autoplay="true")
+            source(src="/videos/av4622940.mp4",type="video/mp4")
           .commentContent.containerOfDanmu
-        .btn-group.hidden(role="group")
+        .btn-group(role="group")
           button.btn.btn-default.VideoPlay(type="button") 播放
           button.btn.btn-default.VideoPause(type="button") 暂停
-          button.btn.btn-default.VideoNext(type="button") 下一首
           button.btn.btn-default.VideoTime(type="button") 00:00
-          button.btn.btn-default.VideoDanmu(type="button") 弹幕
 
       .col-md-5
         ul.nav.nav-tabs
@@ -56,6 +52,5 @@ block content
               .input-group-btn 
                 button.btn.btn-default.sendmsg 发射
           .userlist(class="tab-pane" id="userList")
-        
-  //-脚本位置
+          
   script(src="/js/fmplayer.js") 

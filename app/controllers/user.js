@@ -159,13 +159,17 @@ exports.signinRequired = function(req,res,next){
 
 exports.adminRequired = function(req,res,next){
   var user = req.session.user
-  if(user.role <= 1000){
+  if( !user || user.role <= 1000){
     return res.redirect('/user/sign')
   }
   next()
 }
 
 exports.logout = function(req,res){
+  var name = req.session.user.name
+  User.update({name:name},{$set:{status:'offline'}},function(err,user){
+    if(err){console.log(err);}
+  })
   delete req.session.user
   res.redirect('/')
 }

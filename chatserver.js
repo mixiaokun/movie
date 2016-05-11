@@ -6,7 +6,7 @@ module.exports = function(server){
   var userlist = {}
   io.on('connection', function(socket){
     socket.on('join', function(data){
-      console.log('mid:---'+data.mid);
+      console.log('midOfChat:'+data.mid);
       socket.name = data.name
       socket.chanel = data.mid
       var chanel = data.mid
@@ -16,7 +16,7 @@ module.exports = function(server){
         if(err){console.log(err);}
         socket.join(chanel)
         socket.broadcast.to(chanel).emit('new message',{msg_from:socket.name,msg:'进入了房间'})
-        User.find({watching:chanel},function(err,users){
+        User.find({watching:chanel,status:'online'},function(err,users){
           if(err){console.log(err);}
           if(users){
             var chanelUsers = []
