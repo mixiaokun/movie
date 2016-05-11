@@ -291,7 +291,7 @@ exports.getBilibiliVideoUrl = function(req,res){
       var DBXmlFileName       = mid + '.xml'
       var videoUrl = '/videos/' + TranscodedVideoName
       var xmlUrl   = '/videos/' + DBXmlFileName
-      var dirPath = path.dirname(process.argv[1]) + '/file/videos/'``
+      var dirPath = path.dirname(process.argv[1]) + '/file/videos/'
       checkLocalFile(dirPath,TranscodedVideoName).then(function(val){
         console.log('val: ' + val );
         if(val == 1){
