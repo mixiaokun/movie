@@ -1,0 +1,69 @@
+extends ../layout
+block content
+  .container
+    .row
+      .col-md-7
+        video(id="video-1" style="width:100%;"  controls="controls" data-setup="{}" autobuffer="true")
+          if movie.video_url
+            source(src="#{movie.video_url}" type="video/mp4")
+          else
+            source(src="/videos/demo.mp4" type="video/mp4")
+        hr
+        h2 评论区
+        ul.media-list
+          each comment in comments
+            li.media
+              .media-left
+                a.comment(href="#comments" data-cid="#{comment._id}" data-tid="#{comment.from._id}")
+                  image(class="media-object" width="40px" height="40px" src="https://lh5.googleusercontent.com/-5m8NHZtncgE/AAAAAAAAAAI/AAAAAAAAAQQ/e9ATCF8IehA/s96-c/photo.jpg" class="img-thumbnail")
+              .media-body
+                h4.media-heading  #{comment.from.name}
+                p #{comment.content}
+                if comment.reply && comment.reply.length > 0
+                  ul.media-list
+                    each reply in comment.reply
+                      li.media
+                        .media-left
+                          a.comment(href="#comments" data-cid="#{comment._id}" data-tid="#{reply.from._id}")
+                            image(class="media-object" width="30px" height="30px" src="https://lh5.googleusercontent.com/-5m8NHZtncgE/AAAAAAAAAAI/AAAAAAAAAQQ/e9ATCF8IehA/s96-c/photo.jpg" class="img-thumbnail")
+                        .media-body
+                          h5.media-heading 
+                            | #{reply.from.name}
+                            span.text-info &nbsp;回复&nbsp;
+                            | #{reply.to.name}:
+                          p #{reply.content}
+                            
+        #comments
+          form#commentForm(method="POST" action="/user/comment")
+            input(type="hidden" name="comment[movie]" value="#{movie._id}")
+            if(user)
+              input(type="hidden" name="comment[from]" value="#{user._id}")
+            textarea.form-control(name="comment[content]" row="3")
+            if(user)
+              button.btn.btn-default(type="submit") 提交
+            else
+              a.navbar-link.tolognin(href="javascript:void(0)") 登录后评论
+
+      .col-md-5
+        dl.dl-horizontal
+          dt 电影名字
+          dd #{movie.title}
+          dt 导演
+          dd #{movie.doctor}
+          dt 国家
+          dd #{movie.country}
+          dt 语言
+          dd #{movie.language}
+          dt 上映年份
+          dd #{movie.year}
+          dt 简介
+          dd #{movie.summary}
+          
+  script(src='/js/comment.js')
+  script.
+    $(function(){
+      $('.tolognin').click(function(e){
+        var referer = window.location.pathname
+        window.location.href = 'https://localhost:4000/user/sign?referer='+referer
+      })
+    })

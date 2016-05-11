@@ -1,0 +1,142 @@
+extends ../layout
+block content
+  .container
+    .row
+      .col-md-4.col-md-offset-4
+        ul.nav.nav-tabs
+          li(class="active")
+            a(href="#signin" data-toggle="tab") 登录
+          li  
+            a(href="#signup" data-toggle="tab") 注册
+          li  
+            a(href="#google" data-toggle="tab") Google
+        .msgContent
+        .tab-content
+          .tab-pane#signin(class="active")
+            br
+            h4.forget
+            p.text-info.signinInfor 
+              | &nbsp;
+            .input-group
+              span.input-group-addon 邮箱
+              input.loginEmail.form-control(type="email" placeholder="example@gmail.com")
+            .input-group
+              span.input-group-addon 密码  
+              input.logninPassword.form-control(type="password" placeholder="0-9/a-z/A-Z/_")
+            .input-group
+              lable
+              .input-group-btn
+                button.logninSubmit.btn.btn-default 登录
+          .tab-pane#signup
+            br
+            .verifyEmailInfo
+            p.text-info.signupInfor 
+              | &nbsp;
+            .input-group
+              .span.input-group-addon 用户
+              input.signupName.form-control(type="text" placeholder="username")
+            .input-group
+              .span.input-group-addon 邮箱
+              input.signupEmail.form-control(type="email" placeholder="example@gmail.com")
+            .input-group
+              .span.input-group-addon 密码  
+              input.signupPassword.form-control(type="password" placeholder="0-9/a-z/A-Z/_")
+            .input-group
+              lable
+              .input-group-btn
+                button.signupSubmit.btn.btn-default 注册
+          .tab-pane#google
+            br
+            h4.changepasswd
+            p.text-info.googleSignupInfor 页面会自动检测Google登录状态
+            .g-signin2(data-onsuccess="onSignIn")
+            
+  script.
+    $(function(){
+      
+      $('.logninSubmit').click(function(){
+        $.ajax({
+          url:'/user/signin',
+          type:'post',
+          data:{
+            email:$('.loginEmail').val(),
+            password:$('.logninPassword').val(),
+            referer: window.location.search.split('=')[1]
+          },
+          dataType:'json',
+          success:function(data){   
+            if(data.type == 0){
+              $('.signinInfor').text(data.success)
+            }else if (data.type == 1) {
+              window.location.href = "https://localhost:4000" + data.success
+            }else if (data.type == 2) {
+              $('.signinInfor').text(data.err)
+            }else if (data.type == 3) {
+              $('.forget').html('<a href=\'/user/forget\'>忘记密码</a>')
+              $('.signinInfor').text(data.err)
+            }else if (data.type == 4) {
+              $('.forget').html('<a href=\'/user/forget\'>忘记密码</a>')
+              $('.signinInfor').text(data.err)
+            }else if (data.type == 5) {
+              $('.signinInfor').text(data.err)
+            }
+          }
+        })
+      })
+      
+      $('.signupSubmit').click(function(){
+        $.ajax({
+          url:'/user/signup',
+          type:'post',
+          data:{
+            name:$('.signupName').val(),
+            email:$('.signupEmail').val(),
+            password:$('.signupPassword').val(),
+          },
+          dataType:'json',
+          success:function(data){
+            if(data.success){
+              $('.signupInfor').text(data.success)
+              var html = "<h4><a href=\"/user/verify\">建议您验证您的邮箱地址</a></h4>"
+              $('.verifyEmailInfo').html(html)
+            }else{
+              $('.signupInfor').text(data.err)
+            }
+          }
+        })
+      })  
+    })
+    
+    function onSignIn(googleUser){
+      var profile = googleUser.getBasicProfile();
+      var id_token = googleUser.getAuthResponse().id_token;
+      var name = profile.getName();
+      var email = profile.getEmail();
+      var image_url = profile.getImageUrl();
+      console.log(id_token);
+      $.ajax({
+        type:"POST",
+        url:"/user/signup",
+        data:{
+          name : name,
+          email : email,
+          id_token : id_token,
+          image_url : image_url
+        },
+        dataType:"json",
+        success:function(data){
+          if(data.success){
+            $('<a>').attr({'href':'/forget'})
+            .text('建议您使用独立的密码。')
+            .appendTo($('.changepasswd'))
+            $('.googleSignupInfor').text(data.success)
+          }else{
+            console.log(data.err);
+          }
+        }
+      })
+    }
+
+    
+
+      

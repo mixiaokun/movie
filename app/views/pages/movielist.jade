@@ -1,0 +1,128 @@
+extends ../layout
+block content
+  .container
+    .row
+      .input-group.col-sm-6
+        .input-group-btn
+          button.btn.btn-success.getTop 一键导入豆瓣TOP250数据
+          
+  .container
+    .row
+      table.table
+        thead
+          th 电影名字
+          th 导演
+          th 国家
+          th 分类
+          th.reRankYear 上映年份
+            i.fa.fa-arrow-down
+          th 录入时间
+          th 详情
+          th 更新
+          th 删除
+          th 访问量
+          th 海报
+        
+        tbody
+          each item in movies
+            tr(class="item-id-#{item._id}")
+              td.title #{item.title}
+              td.doctor #{item.doctor}
+              td.country #{item.country}
+              th.category 
+                if (item.category)
+                  | #{item.category.name}
+              td.year #{item.year}
+              td #{moment(item.meta.createdAt).format('MM/DD/YYYY')}
+              td 
+                a(target="_blank", href="/movie/#{item._id}") 查看
+              td 
+                a(target="_blank", href="/movie/update/#{item._id}") 修改
+              td 
+                button.btn.btn-xs.btn-danger.del(tyep="button",data-id="#{item._id}") 删除
+              td #{item.pv}
+              td 
+                if item.poster
+                  a(href="#{item.poster}").showImage 预览
+                else
+                  a(target="_blank", href="#") 上传海报
+  
+  script.
+    $(function(){
+
+      $('.getTop').click(function(){
+        $.ajax({
+          url:"https://api.douban.com/v2/movie/top250?start=0&count=50",
+          cache: true,
+          type: 'get',
+          dataType: 'jsonp',
+          crossDomain: true,
+          jsonp: 'callback',
+          success:function(results){
+            for(i=0; i < results.subjects.length; i++){
+              var doubanId = results.subjects[i].id  
+              $.ajax({
+                url: 'https://api.douban.com/v2/movie/subject/' + doubanId,
+                cache: true,
+                type: 'get',
+                dataType: 'jsonp',
+                crossDomain: true,
+                jsonp: 'callback',
+                success: function(data) {
+                  var title = data.title
+                  var doctor = data.directors[0].name
+                  var country = data.countries[0]
+                  var poster = data.images.large
+                  var year = data.year
+                  var summary = data.summary
+                  var categoryName = data.genres[0]
+                  $.ajax({
+                    type:'post',
+                    url:'/movie/saveBatch',
+                    data:{
+                      title:title,
+                      doctor:doctor,
+                      country:country,
+                      poster:poster,
+                      year:year,
+                      summary:summary,
+                      categoryName:categoryName
+                    },
+                    success:function(data1){
+                      if(data1.status === 200){
+                        console.log(i);
+                      }else {
+                        console.log(data1.err);
+                      }
+                    }
+                  })
+                },
+              })
+            }
+          }
+        })
+      });
+
+      $('.del').click(function(e){
+        var target = $(e.target)
+        var id = target.data('id')
+        var tr = $('.item-id-' + id)
+        $.ajax({
+          type: 'DELETE',
+          url: '/movie/list?id=' + id
+        })
+        .done(function(results) {
+          if (results.success === 1) {
+            if (tr.length > 0) {
+              tr.remove()
+            }
+          }
+        })
+      })
+      
+      $('.reRankYear').click(function(){
+        console.log('---');
+        window.location.href = window.location.href + '?rank=-1'
+      })
+    })
+  

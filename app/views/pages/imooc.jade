@@ -1,0 +1,116 @@
+extends ../layout
+block content
+  .container
+    .row
+      hr
+      .col-md-6
+        //- 输入课程主页地址
+        p 如果你需要录入课程数据，请在下面的输入框中输入您需要录入课程主页地址。
+        .input-group
+          span.input-group-addon Url地址:
+          input.inputurl(type="url" class="form-control" placeholder="课程主页地址")
+          .input-group-btn
+             button.btn.btn-default.submitUrl 提交
+             
+        .loginConent
+          hr
+          p 对于获取视频播放地址需要您提供你imooc的账号和密码。我们保证您的账号安全。
+          .login
+          .input-group
+            span.input-group-addon 账号:
+            input.inputaccout(type="email" class="form-control" placeholder="imooc accout")
+            span.input-group-addon 密码:
+            input.inputpassword(type="password" class="form-control" placeholder="password")
+            .input-group-btn
+               button.btn.btn-default.submitAccout 提交
+        //- 展示已保存数据
+        br
+        .savedContent
+         ul.list-group
+           each item in savedLesson
+             li.list-group-item.saveitem #{item.name}
+              span.hiddenid(value="#{item._id}")
+      
+      .col-md-6
+       .panel.panel-default
+         .panel-heading.lessonName 
+         ul.list-group.lessonContent
+
+  script.
+    $(function(){
+      //- 提交课程主页
+      $('.submitUrl').click(function(e){
+        $.ajax({
+          url:'/spider/imooc',
+          type:'post',
+          data:{url:$('.inputurl').val()},
+          dataType:'json',
+          success:function(data){
+            $('.inputurl').val('已经成功保存课程数据到服务器')
+          }
+        })
+      })
+      
+      $('.submitAccout').click(function(e){
+        $.ajax({
+          url:'/spider/getCookie',
+          type:'post',
+          data:{
+            accout:$('.inputaccout').val(),
+            password:$('.inputpassword').val()
+          },
+          dataType:'json',
+          success:function(data){
+            $('<li>').attr({class:'list-group-item'})
+            .text('成功获取到imooc网站的cookie')
+            .appendTo('.login')
+          }
+        })
+      })
+      
+      //- 展示书籍的详细信息
+      $('.saveitem').click(function(e){
+        var obj = $(this)
+        var id = obj.find('span').attr('value')
+        $.ajax({
+          url:'/spdier/getlessondata',
+          type:'post',
+          data:{_id:id},
+          dataType:'json',
+          success:function(data){
+            //- 服务返回课程信息，章节信息，小节信息
+            $('.lessonName').text(data.lessonName)
+            var html = '';
+            for(var i = 0; i < data.chapters.length; i++){
+              html += "<li class=\"list-group-item\" onclick = \"getLessonSections(this)\">" + data.chapters[i].name
+              html += "<br><div class=\"list-group-hidden\" ></div>"
+              $('.lessonContent').html(html);
+            }
+          }
+        })
+      })
+    })
+    
+    function getLessonSections(obj){
+      //- 获取当前元素的text
+      var text = $(obj).contents().get(0).nodeValue
+      $.ajax({
+        url:'/spdier/getlessondata',
+        type:'post',
+        data:{parent:text},
+        dataType:'json',
+        success:function(data){
+          var html = '';
+          for (var i = 0; i < data.length; i++) {
+            //- section-item用于确定用户点击target
+            html+="<li class=\"list-group-item section-item\" id = " + data[i].id + ">" + data[i].name
+                                                      //-  表示字符串结束
+            //- 将这个请求获得id,拼装成imooc/video/id这样的格式，再提交个getImoocVideoUrl进行处理
+            var videourl = "/imooc/" + data[i].id
+            html+="<a href= " + videourl + "> 播放</a>"
+            //- 视频的id写入到隐藏标签当中
+            $(obj).find('.list-group-hidden').html(html)
+          }
+        }
+      })
+    }

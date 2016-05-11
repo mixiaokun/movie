@@ -1,0 +1,37 @@
+extends ../layout
+block content
+  .container
+    .row
+      table.table
+        thead
+          th 名字
+          th 邮箱
+          th 用户等级
+            span.info.glyphicon.glyphicon-info-sign
+          th 删除用户
+        tbody
+          each item in users
+            tr(class="item-id-#{item._id}")
+              td #{item.name}
+              td #{item.email}
+              td #{item.role}
+              td  
+                button.delUser.btn.btn-xs.btn-danger(data-id="#{item._id}") 删除用户
+            
+  script.
+    $('.delUser').click(function(e){
+      var target = $(e.target)
+      id = target.data('id')
+      var tr = $('.item-id-' + id)
+      $.ajax({
+        type: 'DELETE',
+        url: '/user/list?id=' + id
+      })
+      .done(function(results) {
+        if (results.success === 1) {
+          if (tr.length > 0) {
+            tr.remove()
+          }
+        }
+      })
+    })

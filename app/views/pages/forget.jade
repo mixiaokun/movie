@@ -1,0 +1,108 @@
+extends ../layout
+block content
+  .container
+    .col-md-4.col-md-offset-4
+      h4 您正在修改密码的邮箱地址为：
+      p.static 
+      .row.email
+        hr
+        p 请输入您的注册邮箱地址:
+        h4.emailInfo
+        .input-group
+          span.input-group-addon 您的邮箱:
+          input.inputEmail(type="text" class="form-control" placeholder="example@xxx.com")
+          .input-group-btn
+             button.btn.btn-default.submitEmail 提交
+      .row.code.hidden 
+        hr     
+        span.codeInfo
+        p 邮件收取可能存在延时,请在一分钟之后再检查您的邮箱.
+        p 如果您的未找到通知邮件,请检查您的垃圾邮箱.
+        .input-group
+          span.input-group-addon 验证码:
+          input.inputCode(type="text" class="form-control" placeholder="received one time password")
+          .input-group-btn
+            button.btn.btn-default.submitCode 提交
+      .row.passwd.hidden
+        hr       
+        span.passwdInfo
+         .input-group
+           span.input-group-addon 新设密码:
+           input#psd1(type="password" class="form-control")
+         .input-group
+           span.input-group-addon 确认密码:
+           input#psd2.inputPasswd(type="password" class="form-control")
+         .input-group
+           label
+           .input-group-btn
+              button.btn.btn-default.submitPasswd 提交
+                
+      script.
+       $(document).ready(function(){
+         $('.submitEmail').click(function(){
+           $('.static').text($('.inputEmail').val())
+           $.ajax({
+             url:'/user/getcode',
+             type:'post',
+             data:{email:$('.inputEmail').val()},
+             dataType:'json',
+             success:function(data){
+               if(data.type == 0){
+                 $('.emailInfo').text(data.result)
+                 $('.code').removeClass('hidden')
+               }else if (data.type ==1) {
+                 $('.emailInfo').text(data.result)
+               }
+             }
+           })
+         })
+         
+         $('.submitCode').click(function(){
+           $.ajax({
+             url:'/user/verifycode',
+             type:'post',
+             data:{
+               code:$('.inputCode').val(),
+               email:$('.static').text()
+             },
+             dataType:'json',
+             success:function(data){
+               if(data.type == 0){
+                 $('.email').addClass('hidden')
+                 $('.passwd').removeClass('hidden')
+                 $('.codeInfo').text(data.result)
+               }else if (data.type ==1) {
+                 $('.codeInfo').text(data.result)
+               }
+             }
+           })
+         })
+         
+         $(".submitPasswd").attr('disabled', 'disabled');
+         $(".inputPasswd").keyup(function(){
+           pwd1 = $("#psd1").val();
+           pwd2 = $("#psd2").val();
+           if(pwd1 === pwd2){
+             $(".submitPasswd").removeAttr('disabled')
+           }
+         })
+         $('.submitPasswd').click(function(){
+           $.ajax({
+             url:'/user/changepasswd',
+             type:'post',
+             data:{
+               passwd:$('.inputPasswd').val(),
+               email:$('.static').text()
+             },
+             dataType:'json',
+             success:function(data){
+               if(data.type == 1){
+                 $('.code').addClass('hidden')
+                 $('.passwdInfo').text(data.result)
+               }else if (data.type == 0) {
+                 window.location.pathname = '/user/sign'
+               }
+             }
+           })
+         })
+       })

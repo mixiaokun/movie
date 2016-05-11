@@ -1,0 +1,83 @@
+doctype
+html
+  head
+    include ../includes/head
+    title Home
+  body
+    nav.navbar.navbar-default
+      .container
+        .navbar-header
+          a.navbar-brand(href='#') 豆瓣电影
+        #bs-example-navbar-collapse-1.collapse.navbar-collapse
+          ul.nav.navbar-nav
+            li
+              a(href='/movie/fm') 哔哩哔哩
+            li
+              a(href='/imooc') 慕课网
+              
+          if user
+            p.navbar-text.navbar-right
+              span.user.name  欢迎您 #{user.name}
+              span &nbsp;|&nbsp
+              a.logout.navbar-link(href="/user/logout") 登出
+              script.
+                $('.logout').click(function(e){
+                  Cookies.remove('name');
+                })
+          else
+            p.navbar-text.navbar-right
+              a.navbar-link(href="#", data-toggle="modal", data-target="#signupModal") 注册
+              span &nbsp;|&nbsp
+              a.navbar-link(href="#", data-toggle="modal", data-target="#signinModal") 登录
+            
+          #signupModal.modal.fade
+            .modal-dialog
+              .modal-content
+                form(method="POST",action="/user/signup")
+                  .modal-header 注册
+                  .modal-body
+                    .form-group
+                      label(for="signupName") 用户名
+                      input#signupName.form-control(name="name",type='text')
+                    .form-group
+                      label(for="signupEmail") 邮箱
+                      input#signupEmail.form-control(name="email",type='email')
+                    .form-group
+                      label(for="signupPassword") 密码
+                      input#signupPassword.form-control(name="password",type='password')
+                  .modal-footer 
+                    button.btn.btn-default(type="button",data-dismiss="modal") 关闭
+                    button.btn.btn-default(type="submit") 提交
+          #signinModal.modal.fade
+            .modal-dialog
+              .modal-content
+                form(method="POST",action="/user/signin")
+                  .modal-header 登录
+                  .modal-body
+                    .form-group
+                      label(for="sinnupEmail") 邮箱
+                      input#sinnupEmail.form-control(name="email",type='email')
+                    .form-group
+                      label(for="signinPassword") 密码
+                      input#signinPassword.form-control(name="password",type='password')
+                  .modal-footer 
+                    button.btn.btn-default(type="button",data-dismiss="modal") 关闭
+                    button.btn.btn-default(type="submit") 提交  
+    .container
+      .row
+        each cat in categories
+          if cat.movies && cat.movies.length > 0
+            .panel.panel-default
+              .panel-heading #{cat.name}
+              .panel-body
+                each item in cat.movies
+                  .col-md-2
+                    .thumbnail
+                      a(href="/movie/#{item._id}")
+                        if item.poster.indexOf('https:/') > -1
+                          img(src="#{item.poster}", alt="#{item.title}")
+                        else
+                          img(src="/images/#{item.poster}", alt="#{item.title}")
+                      .caption
+                        h6 #{item.title}
+                        a.btn.btn-xs.btn-info(href="/movie/#{item._id}", role="button") 播放视频

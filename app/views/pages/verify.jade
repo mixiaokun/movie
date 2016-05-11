@@ -1,0 +1,26 @@
+extends ../layout
+block content
+  .container
+    .col-md-4.col-md-offset-4
+      .row
+      h4.info
+      p 请输入需要验证的邮箱地址:
+      .input-group
+        span.input-group-addon 您的邮箱:
+        input.inputEmail(type="text" class="form-control" placeholder="example@xxx.com")
+        .input-group-btn
+          button.btn.btn-default.submitEmail 提交
+  script.
+    $(function(){
+      $('.submitEmail').click(function(){
+        $.ajax({
+          url:'/user/emailcode',
+          type:'post',
+          data:{email:$('.inputEmail').val()},
+          dataType:'json',
+          success:function(data){
+            $('.info').text(data.result)
+          }
+        })
+      })
+    })

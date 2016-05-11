@@ -1,0 +1,35 @@
+{
+  "name": "movie",
+  "description": "毕业设计",
+  "main": "app.js",
+  "authors": [
+    "ling"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "豆瓣",
+    "哔哩哔哩",
+    "慕课网",
+    "Nodejs",
+    "Express",
+    "MongoDB",
+    "Jade",
+    "JavaScript",
+    "Spider",
+    "Danmu"
+  ],
+  "homepage": "https://github.com/kuse16/node-movie",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.6",
+    "jquery": "^2.2.3",
+    "font-awesome": "^4.6.2"
+  }
+}

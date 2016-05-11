@@ -1,0 +1,178 @@
+extends ../layout
+block content
+  .container
+    .row
+      .col-md-8.col-md-offset-1
+        form.form-horizontal(method="post",action='/movie/save',enctype="multipart/form-data")
+          .form-group
+            label.control-label.col-sm-2(for="inputTitle") 电影名
+            .col-sm-10
+              .input-group
+                input#inputTitle.form-control(type="text",name="movie[title]",value=movie.title)
+                .input-group-btn
+                  button.btn.btn-default.queryDouban(type="button") 搜索电影信息
+              mark 小提示：当点击搜索之后返回的只是豆瓣电影的ID,需要再次处理ID获取电影的详细信息
+    
+          .form-group
+            label.control-label.col-sm-2  豆瓣同步ID
+            .col-sm-10
+              input#douban.form-control(type="text")
+          if movie._id
+            input(type="hidden", name="movie[_id]", value= movie._id)
+          .form-group
+            label.col-sm-2.control-label(for="inputCategory") 电影分类
+            .col-sm-10
+              input#inputCategory.form-control(type="text",name="movie[categoryName]",value=movie.categoryName)
+          .form-group
+            label.col-sm-2.control-label 分类选择
+            each cat in categories
+              label.radio-inline
+                if movie.category
+                  input(type="radio", name="movie[category]", value=cat._id, checked=cat._id.toString()==movie.category.toString())
+                else
+                  input(type="radio", name="movie[category]", value=cat._id)
+                | #{cat.name}
+          .form-group
+            label.control-label.col-sm-2(for="inputDoctor") 导演
+            .col-sm-10
+              input#inputDoctor.form-control(type="text",name="movie[doctor]",value=movie.doctor)
+          .form-group
+            label.control-label.col-sm-2(for="inputCountry") 国家
+            .col-sm-10
+              input#inputCountry.form-control(type="text",name="movie[country]",value=movie.country)
+          .form-group
+            label.control-label.col-sm-2(for="inputLanguage") 语言
+            .col-sm-10
+              input#inputLanguage.form-control(type="text",name="movie[language]",value=movie.language)
+          .form-group
+            label.control-label.col-sm-2(for="inputYear") 上映年份
+            .col-sm-10
+              input#inputYear.form-control(type="text",name="movie[year]",value=movie.year)
+          hr
+          .form-group  
+            label.control-label.col-sm-2(for="uploadPoster") 上传海报
+            .col-sm-10
+              input(type="file" ,name="uploadPoster")
+          hr
+          .form-group
+            label.control-label.col-sm-2(for="inputPoster") 海报地址
+            .col-sm-10
+              input#inputPoster.form-control(type="text",name="movie[poster]",placeholder="请输入链接地址" value=movie.poster)  
+          .form-group
+            label.control-label.col-sm-2(for="inputSummary") 简介
+            .col-sm-10
+              textarea#inputSummary.form-control(name="movie[summary]", rows="4")
+                | #{movie.summary}              
+          .form-group
+            label.control-label.col-sm-2(for="inputVideo_url") 视频地址
+            .col-sm-10
+              input#inputVideo_url.form-control(type="text",name="movie[video_url]",value=movie.video_url placeholder="视频的原始链接")
+          .form-group
+            label.col-sm-2
+            .col-sm-10
+              button.btn.btn-default(type="submit") 提交
+              mark.submitInfo
+      .col-md-3
+        .resultList
+
+  script.
+    $(function(){
+      
+      $('form').on('submit',function(e){
+        var a = $('#inputCategory').val()
+        var b = setSubmit()
+        var c = $('#inputTitle').val()
+        if((a||b) && c){
+          console.log('submit');
+        }else if (!c) {
+          e.preventDefault()
+          $('.submitInfo').text('还未输入电影名称')
+        }else if(!(a||b)){
+          e.preventDefault()
+          $('.submitInfo').text('请选择分类或新建分类')
+        }else {
+          e.preventDefault()
+        }
+      })
+      
+      $('.queryDouban').click(function() {
+        var title = $('#inputTitle').val()
+        $.ajax({
+          url: 'https://api.douban.com/v2/movie/search?q=' + title,
+          cache: true,
+          type: 'get',
+          dataType: 'jsonp',
+          crossDomain: true,
+          jsonp: 'callback',
+          success:function(data){
+            var used = data.subjects.slice(0,10)
+            
+            var html = ''
+            for (var i = 0; i < used.length; i++) {
+              var title = used[i].title
+              var id = used[i].id
+              html += "<a class = \"list-group-item\" id = " + id + " onclick = \"setDouban(this)\"> " + title + "</a>"
+            }
+            $('.resultList').html(html)
+          }
+        })
+      })
+      
+      $('#douban').blur(function() {
+        var douban = $(this)
+        var id = douban.val()
+        if (id) {
+          $.ajax({
+            url: 'https://api.douban.com/v2/movie/subject/' + id,
+            cache: true,
+            type: 'get',
+            dataType: 'jsonp',
+            crossDomain: true,
+            jsonp: 'callback',
+            success: function(data) {
+              $('#inputTitle').val(data.title)
+              $('#inputDoctor').val(data.directors[0].name)
+              $('#inputCountry').val(data.countries[0])
+              $('#inputPoster').val(data.images.medium)
+              $('#inputYear').val(data.year)
+              $('#inputSummary').val(data.summary)
+              var category = data.genres[0]
+              $.ajax({
+                url:'/category/find',
+                type:'post',
+                data:{category:category},
+                dataType:'json',
+                success:function(data){
+                  if(data.type == 0){
+                    for (var i = 0; i < $(':radio').length; i++) {
+                      if($(':radio')[i].value == data.id){
+                        $($(':radio')[i]).attr('checked','checked')
+                      }
+                    }
+                  }else if (data.type ==1) {
+                    $('#inputCategory').val(data.name)
+                  }
+                }
+              })
+            }
+          })
+        }
+      })
+    })
+    
+    function setDouban(obj){
+      var target = $(obj)
+      $('#douban').val(target.attr('id'))
+      $('#douban').focus()
+    }
+
+    function setSubmit(){
+      var length = $(':radio').length
+      for (var i = 0; i < length; i++) {
+        if($($(':radio')[i]).prop('checked')){
+          return true;
+        }else if((i + 1) == length) {
+          return false
+        }
+      }
+    }

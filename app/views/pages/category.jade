@@ -1,0 +1,25 @@
+extends ../layout
+block content
+  .container
+    .row
+      p 请输入电影分类信息
+      form(action="/category/save" method="POST")
+        .input-group.col-md-4
+          span.input-group-addon 新建分类:
+          input(type="text" class="form-control" name="newcategory")
+          .input-group-btn
+             button.btn.btn-default(type='submit') 提交        
+  hr   
+  .container
+    .row
+      table.table
+        thead
+          th 分类名称
+          th 电影数目
+          th 录入时间
+        tbody
+          each item in categories
+            tr(class="item-id-#{item._id}")
+              td #{item.name}
+              td #{item.movies.length}
+              td #{moment(item.meta.updateAt).format('YYYY/MM/DD')}
