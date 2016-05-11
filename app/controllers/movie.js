@@ -284,18 +284,14 @@ exports.getBilibiliVideoUrl = function(req,res){
       res.json({err:mid})
     }
     else if(stdout){
-      // 在空白前面加上转意符，防止sh执行的时候识别该空白符号--并不是实际的xml文件名称--只是需要它在执行的时候起作用
       var title = stdout.split('Title:')[1].split('Type')[0].trim()
       var   originalVideoName = mid + ".flv";
       var TranscodedVideoName = mid + ".mp4";
       var originalXmlFileName = title + '.cmt.xml'
       var DBXmlFileName       = mid + '.xml'
-
       var videoUrl = '/videos/' + TranscodedVideoName
       var xmlUrl   = '/videos/' + DBXmlFileName
-
-      var dirPath = path.dirname(process.argv[1]) + '/file/videos/'
-      console.log(dirPath);
+      var dirPath = path.dirname(process.argv[1]) + '/file/videos/'``
       checkLocalFile(dirPath,TranscodedVideoName).then(function(val){
         console.log('val: ' + val );
         if(val == 1){
@@ -306,7 +302,7 @@ exports.getBilibiliVideoUrl = function(req,res){
               downloadFile(originalVideoName,baseurl).then(function(val){
                 saveXmlFileToDB(mid,originalXmlFileName,function(data){
                   if(data === 'ok'){
-                    console.log('--成功保存xml文件到数据库--success--返回视频和xml文件');
+                    console.log('成功保存xml文件到数据库--success--返回视频和xml文件');
                     saveDBXmlFileToLocal(mid,function(data){
                       if(data === 'ok'){
                         res.json({
@@ -317,7 +313,7 @@ exports.getBilibiliVideoUrl = function(req,res){
                     })
                   }
                   else if(data === 'err'){
-                    console.log('--保存xml文件到数据库出错--error--只返回视频数据--');
+                    console.log('保存xml文件到数据库出错--error--只返回视频数据');
                     res.json({videoUrl : videoUrl})
                   }
                 })
@@ -344,7 +340,7 @@ exports.getBilibiliVideoUrl = function(req,res){
               console.log('transcode success')
               saveXmlFileToDB(mid,originalXmlFileName,function(data){
                 if(data === 'ok'){
-                  console.log('--成功保存xml文件到数据库--success--返回视频和xml文件');
+                  console.log('成功保存xml文件到数据库--success--返回视频和xml文件');
                   saveDBXmlFileToLocal(mid,function(data){
                     if(data === 'ok'){
                       res.json({
@@ -355,7 +351,7 @@ exports.getBilibiliVideoUrl = function(req,res){
                   })
                 }
                 else if(data === 'err'){
-                  console.log('--保存xml文件到数据库出错--error--只返回视频数据--');
+                  console.log('保存xml文件到数据库出错--error--只返回视频数据--');
                   res.json({videoUrl : videoUrl})
                 }
               })
@@ -385,14 +381,12 @@ function checkLocalFile(dirPath,TranscodedVideoName) {
       }else{
           files.forEach(function(file){
           fs.stat(dirPath + file, function(err,stats){
-            // 注意这个task-- 代码位置
             task--
             if(err){console.log(err);}
             else if(stats.isFile()){
               if(file == TranscodedVideoName){
                 resolve(1)
-              }
-              if(task == 0) {
+              }else if(task == 0) {
                 resolve(0)
               }
             }else {
@@ -409,10 +403,10 @@ function checkDbMid(mid){
   return new Promise(function(resolve, reject){
     Chat.find({video_id:mid},function(err,docs){
       if(docs.length == 0){
-        console.log('--数据库中没有相应的xml数据--重新从bilibili下载视频以及xml数据--');
+        console.log('数据库中没有相应的xml数据--重新从bilibili下载视频以及xml数据');
         resolve(0)
       }else {
-        console.log('--数据库中存在相应数据，正在将数据重新生成xml--');
+        console.log('数据库中存在相应数据，正在将数据重新生成xml');
         resolve('n')
       }
     })
@@ -421,12 +415,6 @@ function checkDbMid(mid){
 
 function downloadFile(TranscodedVideoName,baseurl){
   return new Promise(function(resolve, reject){
-
-    // 处理有可能下载出错的文件，但是如果直接这样处理，在前端页面请求数据的时候会出现404err
-    // const delerrfile = exec("find ./file/videos -type f -not -name \"*mp4\" -delete", function(error,stdout,stderr){
-    //   if(error){console.log(error);}
-    // })
-
     var command = 'you-get  -o ./file/videos -O '+ TranscodedVideoName + ' ' + baseurl
     const child = exec(command,function(error,stdout,stderr){
       if(error){
@@ -458,11 +446,10 @@ function transcodeVideo(originalVideoName,TranscodedVideoName){
 function saveXmlFileToDB(mid,originalXmlFileName,callback){
   Chat.remove({original_flag:'xml', video_id:mid},function(err,obj){
     if(err){console.log(err);}
-    if(obj.result.n == 0){console.log('--数据库中不存在该番号的弹幕数据，直接写入新数据--');}
+    if(obj.result.n == 0){console.log('数据库中不存在该番号的弹幕数据，直接写入新数据');}
     originalXmlFileNameWithPath = './file/videos/' + originalXmlFileName
     var parser = new xml2js.Parser()
     fs.readFile(originalXmlFileNameWithPath,function(err,data){
-
       parser.parseString(data,function(err,result){
         if(err){
           console.log(err);
@@ -489,7 +476,7 @@ function saveXmlFileToDB(mid,originalXmlFileName,callback){
             })
           }
           if(task == 0){
-            console.log('--xml to json 已保存到数据库--');
+            console.log('xml to json 已保存到数据库');
             callback('ok')
           }
         }
@@ -512,7 +499,7 @@ function saveDBXmlFileToLocal(mid,callback){
       if(err){console.log(err);}
       fs.writeFile(xmlFilePath, xmlstring, function(err){
         if(err){console.log(err);}
-        console.log('--xml写入本地成功--');
+        console.log('xml写入本地成功');
         callback('ok')
       })
     })

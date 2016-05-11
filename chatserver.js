@@ -42,7 +42,6 @@ module.exports = function(server){
         var ind = msg.indexOf(' ');
         if(ind !== -1){
           var name = msg.substring(0, ind);
-          console.log(name);
           var msg = msg.substring(ind + 1);
           User.find({name:name,watching:chanel},function(err,user){
             if(err){console.log(err);}
@@ -58,7 +57,6 @@ module.exports = function(server){
               newWhsiperMsg.save(function(err){
                 if(err){console.log(err);}
                 socket.emit('whisper', {msg: msg,msg_from:socket.name, msg_to:name});
-                console.log(Object.keys(userlist));
                 userlist[name].emit('whisper', {msg: msg,msg_from:socket.name, msg_to:name});
               })
             }else {
@@ -67,14 +65,10 @@ module.exports = function(server){
           })
         }
       }else{
-        var newMsg = new Chat({
-          video_id:chanel,msg: msg,msg_from: socket.name
-        });
+        var newMsg = new Chat({video_id:chanel,msg: msg,msg_from: socket.name});
         newMsg.save(function(err){
           if(err){console.log(err);}
-          io.in(chanel).emit('new message', {
-            msg: msg,msg_from: socket.name,msg_to:name
-          });
+          io.in(chanel).emit('new message', {msg: msg,msg_from: socket.name,msg_to:name});
         });
       }
     });
