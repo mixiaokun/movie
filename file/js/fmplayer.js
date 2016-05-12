@@ -127,6 +127,11 @@ function Doajax(mid){
         player.load()
         player.currentTime = 180
         player.play()
+
+        $('video').on('ended',function(){
+          setSource(null,playerList[1])
+        })
+
       }
     }
   })
@@ -223,6 +228,10 @@ function danmuplayer(mid){
     tmr = -1;
   })
 
+  // $('.VideoNext').click(function(){
+  //
+  // })
+
   $('video').on('play',function(){
     cm.startTimer();
   })
@@ -237,7 +246,7 @@ function danmuplayer(mid){
   })
 
   $('video').on('ended',function(){
-    setSource(null,playerList[1])
+    cm.stopTimer();
   })
 
   $('video').on('waiting',function(){
@@ -292,6 +301,10 @@ function changeChatChanel(mid){
       $('.dropdownUserlist').html('')
     })
   }
+
+  $('video').on('ended',function(){
+    socket.disconnect()
+  })
 
   socket.on('new message', function(data){
     displayMsg(data);
