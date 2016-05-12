@@ -26,7 +26,7 @@ function preDo(){
   $('.VideoPause').click(function(){
     $('video').get(0).pause()
   })
-  
+
   $('video').on('timeupdate',function(){
     var currentTime = $('video').get(0).currentTime
     displayTime(currentTime)
