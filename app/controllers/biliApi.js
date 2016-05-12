@@ -1,9 +1,6 @@
 var Movie = require('../models/movie')
 var request = require('request');
 var cheerio = require('cheerio');
-var mongoose = require('mongoose');
-var dbUrl = 'mongodb://localhost/movie';
-mongoose.connect(dbUrl);
 
 exports.bilispider = function () {
   // 自2016开始-每个月的数据收集一次排行榜数据
