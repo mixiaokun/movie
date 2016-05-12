@@ -303,14 +303,23 @@ exports.getBilibiliVideoUrl = function(req,res){
                     console.log('成功保存xml文件到数据库--success--返回视频和xml文件');
                     saveDBXmlFileToLocal(mid,function(data){
                       if(data === 'ok'){
-                        res.json({
-                          videoUrl : videoUrl,
-                          xmlUrl   : xmlUrl
+                        var _movie = new Movie({
+                          title:title,
+                          mid:mid,
+                          video_url:videoUrl
                         })
+                        _movie.save(function(err,movie) {
+                          if(err){return console.log(err);}
+                          res.json({
+                            videoUrl : videoUrl,
+                            xmlUrl   : xmlUrl
+                          })
+                        })
+                      }else if (data == 'err') {
+                        res.json({err:mid})
                       }
                     })
-                  }
-                  else if(data === 'err'){
+                  }else if(data === 'err'){
                     console.log('保存xml文件到数据库出错--error--只返回视频数据');
                     res.json({videoUrl : videoUrl})
                   }
@@ -496,7 +505,10 @@ function saveDBXmlFileToLocal(mid,callback){
     var xmlstring = xml.end({pretty:true})
     var xmlFilePath = './file/videos/' + mid + '.xml'
     fs.open(xmlFilePath,'w',function(err){
-      if(err){console.log(err);}
+      if(err){
+        console.log(err);
+        callback('err')
+      }
       fs.writeFile(xmlFilePath, xmlstring, function(err){
         if(err){console.log(err);}
         console.log('xml写入本地成功');

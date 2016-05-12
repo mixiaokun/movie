@@ -6,13 +6,13 @@ module.exports = function(server){
   var userlist = {}
   io.on('connection', function(socket){
     socket.on('join', function(data){
-      console.log('midOfChat:'+data.mid);
+      console.log(data.name + '进入聊天频道:'+data.mid);
       socket.name = data.name
       socket.chanel = data.mid
       var chanel = data.mid
       userlist[socket.name] = socket
 
-      console.log(Object.keys(userlist));
+      console.log('当前所有在线用户：' + Object.keys(userlist));
       User.update({name:socket.name},{$set:{watching:chanel}},function(err,user){
         if(err){console.log(err);}
         socket.join(chanel)
@@ -30,6 +30,9 @@ module.exports = function(server){
           }
         })
       })
+      Chat.find({msg_to:socket.name},function(err,docs){
+        socket.emit('load old secmsg',docs)
+      })
       Chat.find({video_id:chanel},function(err,docs){
         socket.emit('load old msgs',docs)
       })
@@ -44,7 +47,7 @@ module.exports = function(server){
         if(ind !== -1){
           var name = msg.substring(0, ind);
           var msg = msg.substring(ind + 1);
-          User.find({name:name,watching:chanel},function(err,user){
+          User.findOne({name:name,watching:chanel},function(err,user){
             if(err){console.log(err);}
             if(user){
               var newWhsiperMsg = new Chat({
@@ -57,15 +60,14 @@ module.exports = function(server){
               })
               newWhsiperMsg.save(function(err){
                 if(err){console.log(err);}
-                socket.emit('whisper', {msg: msg,msg_from:socket.name, msg_to:name});
-                for(var i = 0; i < userlist.length; i++){
-                  if(name == userlist[i]){
-                    userlist[name].emit('whisper', {msg: msg,msg_from:socket.name, msg_to:name});
-                  }
+                if(userlist[name]){
+                  userlist[name].emit('whisper', {msg: msg,msg_from:socket.name, msg_to:name});
+                  socket.emit('whisper', {msg: msg,msg_from:socket.name, msg_to:name});
                 }
               })
             }else {
-               callback('错误！user not found！');
+              console.log(name);
+              callback('错误！用户不存在！');
             }
           })
         }
@@ -80,10 +82,9 @@ module.exports = function(server){
 
     socket.on('disconnect', function(data){
       socket.leave(socket.chanel)
-      delete userlist[socket.name]
-      console.log('del----------------------');
+      console.log('用户离开');
       var chanelUsers = []
-      User.update({name:socket.name,status:'online'},{$set:{watching:'0000',}},function(err,user){
+      User.update({name:socket.name,status:'online'},{$set:{watching:'',}},function(err,user){
         if(err){console.log(err);}
         User.find({watching:socket.chanel},function(err,users){
           if(err){console.log(err);}

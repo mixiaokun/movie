@@ -61,6 +61,7 @@ function ranklist() {
       dataType:'json',
       success:function(data){
         var html = ''
+        console.log('数组长度：' + data.length);
         for(var i = 0; i < data.length; i++){
           html += "<li class=\"list-group-item\"> <a onclick=\"setSource(this,null)\" id= "+ data[i].id + ">"+ data[i].title + "</a></li>"
           playerList.push(data[i].id)
@@ -111,6 +112,8 @@ function Doajax(mid){
         $('#' + mid).parent().remove()
         setSource(null,playerList[index])
       }else{
+        var index = playerList.indexOf(mid)
+        preloadFile(playerList[index + 1])
         updateListDom(mid)
         danmuplayer(mid)
         changeChatChanel(mid)
@@ -121,7 +124,6 @@ function Doajax(mid){
         player.pause()
         player.load()
         player.play()
-        preloadFile(playerList[1])
       }
     }
   })
@@ -148,13 +150,13 @@ function preloadFile(mid) {
 
 function updateListDom(mid){
   var index = playerList.indexOf(mid)
+  var length = playerList.length
   var list = $('.videolist li a')
   for(var i = 0; i < index; i++){
-    console.log(i);
-    playerList[19+i] = $(list[i]).attr('id')
-    $('#'+playerList[i]).parent().insertAfter($('#'+playerList[19+i]).parent())
+    playerList[length + i] = $(list[i]).attr('id')
+    $('#' + playerList[i]).parent().insertAfter($('#' + playerList[length-1 + i]).parent())
   }
-  playerList = playerList.slice(index, 19 + index)
+  playerList = playerList.slice(index, length + index)
 }
 
 function dropdownUserlist(){
@@ -181,37 +183,6 @@ function selectname(obj){
   var target = $(obj)
   var onlineUsername = target.text()
   $('.msg').val('/w ' + onlineUsername)
-}
-
-function displayMsg(data){
-  var list = $('.danmulist li')
-
-  if(list.length >= 10){
-    for (var i = 0; i < list.length-10; i++) {
-      list[i].remove()
-    }
-  }
-
-  if(!data.msg_from){
-    data.msg_from = 'bili'
-  }
-
-  $('<li>').attr({
-    class:'list-group-item',
-  }).text(data.msg_from + ':'+data.msg)
-  .appendTo('.danmulist')
-}
-
-function displayError(data){
-  $('<li>').attr({class:'list-group-item'}).addClass('err')
-  .text('ERR:'+'-'+data)
-  .appendTo('.danmulist')
-}
-
-function displayWhisper(data){
-  $('<li>').attr({class:'list-group-item'}).addClass('whisper')
-  .text('SEC:'+ data.msg_from + '发送给'+data.msg_to + "-"+data.msg)
-  .appendTo('.danmulist')
 }
 
 function danmuplayer(mid){
@@ -300,6 +271,7 @@ function changeChatChanel(mid){
           displayError(data)
         })
         $('.msg').val('');
+        $('.dropdownUserlist').html('')
       }
     });
 
@@ -312,6 +284,7 @@ function changeChatChanel(mid){
         displayError(data)
       })
       $('.msg').val('');
+      $('.dropdownUserlist').html('')
     })
   }
 
@@ -324,10 +297,47 @@ function changeChatChanel(mid){
   })
 
   socket.on('load old msgs',function(docs){
-    for(var i=docs.length-1; i >= 0; i--){
+    for(var i = docs.length - 1; i >= 0; i--){
       displayMsg(docs[i]);
     }
   })
+
+  socket.on('load old secmsg',function(docs){
+    for(var i = docs.length - 1; i >= 0; i--){
+      displayWhisper(docs[i]);
+    }
+  })
+}
+
+function displayMsg(data){
+  var list = $('.danmulist li')
+
+  if(list.length >= 10){
+    for (var i = 0; i < list.length-10; i++) {
+      list[i].remove()
+    }
+  }
+
+  if(!data.msg_from){
+    data.msg_from = 'bili'
+  }
+
+  $('<li>').attr({
+    class:'list-group-item',
+  }).text(data.msg_from + ':'+data.msg)
+  .appendTo('.danmulist')
+}
+
+function displayError(data){
+  $('<li>').attr({class:'list-group-item'}).addClass('err')
+  .text('ERR:'+'-'+data)
+  .appendTo('.danmulist')
+}
+
+function displayWhisper(data){
+  $('<li>').attr({class:'list-group-item'}).addClass('whisper')
+  .text('SEC:'+ data.msg_from + '发送给'+data.msg_to + "-"+data.msg)
+  .appendTo('.danmulist')
 }
 
 function displayTime(playhead){

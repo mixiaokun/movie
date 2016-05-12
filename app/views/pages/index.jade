@@ -80,4 +80,7 @@ html
                           img(src="/images/#{item.poster}", alt="#{item.title}")
                       .caption
                         h6 #{item.title}
-                        a.btn.btn-xs.btn-info(href="/movie/#{item._id}", role="button") 播放视频
+                        if item.video_url
+                          a.btn.btn-xs.btn-info(href="/movie/#{item._id}", role="button") 播放视频
+                        else
+                          a.btn.btn-xs.btn-info(href="/movie/#{item._id}", role="button") 查看电影条目信息

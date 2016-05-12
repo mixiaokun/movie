@@ -3,6 +3,7 @@ var Schema = mongoose.Schema
 var ObjectId = Schema.Types.ObjectId
 
 var MovieSchema = new mongoose.Schema({
+    mid:String,
     title:String,
     doctor:String,
     country:String,
