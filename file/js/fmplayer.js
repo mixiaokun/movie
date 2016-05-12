@@ -150,10 +150,11 @@ function updateListDom(mid){
   var index = playerList.indexOf(mid)
   var list = $('.videolist li a')
   for(var i = 0; i < index; i++){
-    playerList[20+i] = $(list[i]).attr('id')
+    console.log(i);
+    playerList[19+i] = $(list[i]).attr('id')
     $('#'+playerList[i]).parent().insertAfter($('#'+playerList[19+i]).parent())
   }
-  playerList = playerList.slice(index, 20 + index)
+  playerList = playerList.slice(index, 19 + index)
 }
 
 function dropdownUserlist(){
@@ -214,7 +215,6 @@ function displayWhisper(data){
 }
 
 function danmuplayer(mid){
-  $('.danmuPlayer').height($('.player').height())
   var cm = new CommentManager($('.commentContent').get(0));
   cm.init();
   var tmr = -1;//定时器

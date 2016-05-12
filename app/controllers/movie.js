@@ -453,7 +453,7 @@ function saveXmlFileToDB(mid,originalXmlFileName,callback){
           console.log(err);
           callback('err')
         }
-        if(result){
+        if(result && result.i.d){
           var content = result.i.d
           var task = content.length
           for(var i = 0; i < content.length; i++){
@@ -477,6 +477,8 @@ function saveXmlFileToDB(mid,originalXmlFileName,callback){
             console.log('xml to json 已保存到数据库');
             callback('ok')
           }
+        }else {
+          callback('err')
         }
       })
     })
