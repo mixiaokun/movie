@@ -42,7 +42,7 @@ exports.bilispider = function (req,res) {
                 var title = video.attr('title').trim().replace(/[\r\n]/g,"")
                 var summary = $(this).find('.v-desc').text()
                 console.log(id + ' : ' + title);
-                Movie.findOne({mid:id},function(err,move){
+                Movie.findOne({mid:id},function(err,movie){
                   if(err){console.log(err);}
                   if(!movie){
                     var biliVideoInfo = new Movie({
@@ -55,17 +55,17 @@ exports.bilispider = function (req,res) {
                       if(err){console.log(err);}
                     })
                   }else {
-                    console.log(mid +' have saved');
+                    console.log(id +' have saved');
                   }
                 })
               })
             }
           })
           if(page == pageCount) clearInterval(interval1)
-        }, 10000);
+        }, 1000);
       })
       if(c == month) clearInterval(interval)
-    },30000)
+    },1000)
   }
   res.json({start:'开始'})
 };
