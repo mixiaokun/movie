@@ -252,7 +252,9 @@ function changeChatChanel(mid){
   var info = {}
   info.mid = mid
   info.name = $('.getname').text()
-  socket.emit('join',info)
+  if(info.name !== '请登录'){
+    socket.emit('join',info)
+  }
   socket.on('usernames', function(data){
     var html = '';
     for(var i=0; i < data.length; i++){

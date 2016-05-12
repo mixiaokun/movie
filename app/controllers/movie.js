@@ -356,8 +356,7 @@ exports.getBilibiliVideoUrl = function(req,res){
                       })
                     }
                   })
-                }
-                else if(data === 'err'){
+                }else if(data === 'err'){
                   console.log('保存xml文件到数据库出错--error--只返回视频数据--');
                   res.json({videoUrl : videoUrl})
                 }
@@ -460,9 +459,9 @@ function saveXmlFileToDB(mid,originalXmlFileName,callback){
       parser.parseString(data,function(err,result){
         if(err){
           console.log(err);
+          console.log('err0');
           callback('err')
-        }
-        if(result && result.i.d){
+        }else if(result && result.i.d){
           var content = result.i.d
           var task = content.length
           for(var i = 0; i < content.length; i++){
@@ -487,6 +486,7 @@ function saveXmlFileToDB(mid,originalXmlFileName,callback){
             callback('ok')
           }
         }else {
+          console.log('err2');
           callback('err')
         }
       })
