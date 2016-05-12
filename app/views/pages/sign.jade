@@ -68,7 +68,7 @@ block content
             if(data.type == 0){
               $('.signinInfor').text(data.success)
             }else if (data.type == 1) {
-              window.location.href = "https://localhost:4000" + data.success
+              window.location.pathname = data.success
             }else if (data.type == 2) {
               $('.signinInfor').text(data.err)
             }else if (data.type == 3) {

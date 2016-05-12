@@ -79,7 +79,7 @@ exports.signin = function(req,res){
           res.cookie('name', user.name, {expires: new Date(Date.now() + 10*24*60*60*1000)})
           if(referer){
             res.json({type:1,success:referer})
-          }else if(req.headers.referer.search(/sign/) !=  -1){
+          }else if(req.headers.referer.search(/sign/) !==  -1){
             res.json({type:0,success:'登录成功'})
           }else {
             res.redirect(req.headers.referer)
@@ -188,7 +188,7 @@ exports.emailcode = function(req,res){
     }else {
       var K = user._id.toString()
       var token = notp.totp.gen(K)
-      var queryurl = 'https://localhost:4000/user/verifyemail?email='+email+'&code='+token
+      var queryurl = 'https://www.smkuse.info/user/verifyemail?email='+email+'&code='+token
       var smtpConfig = {
         service:'gmail',
         auth: {
