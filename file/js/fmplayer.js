@@ -112,6 +112,7 @@ function Doajax(mid){
         setSource(null,playerList[index])
       }else{
         updateListDom(mid)
+        danmuplayer(mid)
         changeChatChanel(mid)
         var playingItem = $('#' + mid)
         $('source').attr('src',data.videoUrl)
@@ -120,7 +121,6 @@ function Doajax(mid){
         player.pause()
         player.load()
         player.play()
-        danmuplayer(mid)
         preloadFile(playerList[1])
       }
     }
