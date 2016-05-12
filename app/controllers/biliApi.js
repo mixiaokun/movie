@@ -67,6 +67,7 @@ exports.bilispider = function () {
       if(c == month) clearInterval(interval)
     },30000)
   }
+  res.json({start:'开始'})
 };
 
 // exports.bilidown = function () {
