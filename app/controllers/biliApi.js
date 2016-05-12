@@ -62,10 +62,10 @@ exports.bilispider = function (req,res) {
             }
           })
           if(page == pageCount) clearInterval(interval1)
-        }, 1000);
+        }, 10000);
       })
       if(c == month) clearInterval(interval)
-    },1000)
+    },30000)
   }
   res.json({start:'开始'})
 };
