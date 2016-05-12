@@ -2,7 +2,7 @@ var Movie = require('../models/movie')
 var request = require('request');
 var cheerio = require('cheerio');
 
-exports.bilispider = function () {
+exports.bilispider = function (req,res) {
   // 自2016开始-每个月的数据收集一次排行榜数据
   var rank = 'stow'
   var month = new Date().getMonth() + 1
