@@ -61,7 +61,6 @@ function ranklist() {
       dataType:'json',
       success:function(data){
         var html = ''
-        console.log('数组长度：' + data.length);
         for(var i = 0; i < data.length; i++){
           html += "<li class=\"list-group-item\"> <a onclick=\"setSource(this,null)\" id= "+ data[i].id + ">"+ data[i].title + "</a></li>"
           playerList.push(data[i].id)
@@ -85,11 +84,14 @@ function setSource(obj,id){
   if(!id){
     var mid = $(obj).attr('id')
     $('#load-player').empty()
-    Doajax(mid)
-  }
-  if(!obj){
+    if(mid){
+      Doajax(mid)
+    }
+  }else if(!obj){
     var mid = id;
-    Doajax(mid)
+    if(mid){
+      Doajax(mid)
+    }
   }
 }
 
@@ -123,6 +125,7 @@ function Doajax(mid){
         var player = $('video').get(0)
         player.pause()
         player.load()
+        player.currentTime = 180
         player.play()
       }
     }
