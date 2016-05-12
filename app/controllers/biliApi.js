@@ -42,7 +42,7 @@ exports.bilispider = function (req,res) {
                 var title = video.attr('title').trim().replace(/[\r\n]/g,"")
                 var summary = $(this).find('.v-desc').text()
                 console.log(id + ' : ' + title);
-                Movie.findOne({mid:mid},function(err,move){
+                Movie.findOne({mid:id},function(err,move){
                   if(err){console.log(err);}
                   if(!movie){
                     var biliVideoInfo = new Movie({
