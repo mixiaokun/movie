@@ -12,6 +12,7 @@ var MovieSchema = new mongoose.Schema({
     summary:String,
     video_url:String,
     poster:String,
+    fake_category:String,
     pv: {
       type: Number,
       default: 0

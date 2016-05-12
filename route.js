@@ -2,6 +2,7 @@ var Index = require('./app/controllers/index')
 var Movie = require('./app/controllers/movie')
 var User = require('./app/controllers/user')
 var Info = require('./app/controllers/info')
+var BiliApi = require('./app/controllers/biliApi')
 var multiparty = require('connect-multiparty')
 var multipartMiddleware = multiparty();
 
@@ -49,4 +50,5 @@ module.exports = function(app){
   app.post('/spider/getCookie',Info.getCookie)//获取imooc登录之后的cookie信息
   app.get('/imooc/:id',Info.player)//获取视频信息并进行播放
 
+  app.get('/savebili',User.adminRequired,User.signinRequired,BiliApi.bilispider)
 }
