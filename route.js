@@ -9,6 +9,7 @@ var multipartMiddleware = multiparty();
 module.exports = function(app){
 
   app.get('/', Index.index)
+  app.get('/index/results',Index.search)
 
   app.get('/user/sign', User.sign)
   app.post('/user/signup', User.signup)
