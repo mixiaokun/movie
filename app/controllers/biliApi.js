@@ -74,7 +74,7 @@ exports.bilispider = function (req,res) {
   res.json({start:'开始'})
 };
 
-exports.bilidown = function () {
+exports.bilidown = function (req,res) {
   var errlist = []
   Movie.find({rank_startTime:'2016-05-01'},function(err,docs) {
     var task = 0
