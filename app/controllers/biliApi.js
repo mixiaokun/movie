@@ -152,6 +152,7 @@ function downloadFile(ovn,baseurl){
 function transcodeVideo(ovn,tvn){
   return new Promise(function(resolve, reject){
     var command = 'cd file/videos && ffmpeg -i ' + ovn + ' -codec copy ' + tvn
+    console.log(command);
     const Transcoding = exec(command,function(error,stdout,stderr){
       if(error) reject(Error(et.te))
       else resolve(et.ts)
