@@ -275,12 +275,10 @@ exports.getBilibiliVideoUrl = function(req,res){
     if(error){
       console.log('处理视频信息出错');
       res.json({err:mid})
-    }
-    else if(stderr){
+    }else if(stderr){
       console.log('读取视频信息出错');
       res.json({err:mid})
-    }
-    else if(stdout){
+    }else if(stdout){
       var title = stdout.split('Title:')[1].split('Type')[0].trim()
       var   originalVideoName = mid + ".flv";
       var TranscodedVideoName = mid + ".mp4";

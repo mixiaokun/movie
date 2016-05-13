@@ -1,3 +1,5 @@
+var Promise = require('es6-promise').Promise;
+const exec = require('child_process').exec;
 var Movie = require('../models/movie')
 var request = require('request');
 var cheerio = require('cheerio');
@@ -72,29 +74,118 @@ exports.bilispider = function (req,res) {
   res.json({start:'开始'})
 };
 
-// exports.bilidown = function () {
-//   var errlist = []
-//   // startTime:'2016-02-01'
-//   Movie.find({fake_category:'bili'},function(err,docs) {
-//     var length = docs.length
-//     // 分成多个线程下载数据
-//     var task = 0
-//     setInterval(function () {
-//       task++
-//
-//       var child_task = 0
-//       var child_Interval(function () {
-//         child_task++
-//
-//         if(child_task == 1000) clearInterval(child_Interval)
-//       }, 10);
-//
-//       if(task)
-//     }, 30*60*1000);
-//   })
-// };
+exports.bilidown = function () {
+  var errlist = []
+  Movie.find({rank_startTime:'2016-05-01'},function(err,docs) {
+    var task = 0
+    var length = docs.length
+    var interval = setInterval(function () {
+      task++
+      var movie = docs[task]
+      var baseurl = "http://www.bilibili.com/video/" + movie.mid
+      // ovn:originalVideoName,
+      // tvn:TranscodedVideoName,
+      // oxn:originalXmlFileName
+      // vdu:video database url
+      var ovn = mid + ".flv";
+      var tvn = movie.mid + ".mp4";
+      var oxn = movie.title + '.cmt.xml'
+      var vdu = '/videos/' + tvn
 
-
-exports.showbili = function (req,res) {
-
+      downloadFile(tvn,baseurl).then(function(dv){
+        // 下载成功 dv:Promise downloadFile return value
+        transcodeVideo(ovn,tvn).the(function(tv){
+          // 转码成功 tv: Promise transcodeVideo return value
+          movie.update({mid:movie.mid},{$set:{video_url:vdu}},function(err,movieUpdate){
+            if(err) console.log(err);
+          })
+          saveXmlFileToDB(oxn).then(function(xv){
+            // xml 保存成功 xml文件数据保存到数据库：xv:Promise saveXmlFileToDB return value
+            console.log(ex.xs);
+          },function(xv){
+            // xml 保存失败
+            console.log(et.xe);
+          })
+        },function(tv){
+          // 转码失败
+          errlist.push(movie.mid)
+        })
+      },function(dv){
+        // 下载失败
+        errlist.push(movie.mid)
+      })
+      if(task == length) clearInterval(interval)
+    }, 60*1000);
+  })
 };
+
+
+// error type
+var et = {
+  de:'Download err',
+  ds:'Download success',
+  te:'Trans Code err',
+  ts:'Trans Code success',
+  xe:'XML to DB err',
+  xs:'XML to DB success'
+}
+
+function downloadFile(tvn,baseurl){
+  return new Promise(function(resolve, reject){
+    var command = 'you-get  -o ./file/videos -O '+ tvn + ' ' + baseurl
+    const child = exec(command,function(error,stdout,stderr){
+      if(error) reject(Error(et.de))
+      else if (stdout) {
+        var errFlag = stdout.search(/Error:/)
+        if (errFlag !== -1) reject(Error(et.de))
+        else {resolve(et.ds)}
+      }
+    })
+  })
+}
+
+function transcodeVideo(ovn,tvn){
+  return new Promise(function(resolve, reject){
+    var command = 'cd file/videos && ffmpeg -i ' + ovn + ' -codec copy ' + tvn
+    const Transcoding = exec(command,function(error,stdout,stderr){
+      if(error){reject(Error(et.te))}
+      else{resolve(et.ts)}
+    })
+  })
+}
+
+function saveXmlFileToDB(mid,oxn){
+  return new Promise(function(resolve, reject) {
+    Chat.remove({original_flag:'xml', video_id:mid},function(err,obj){
+      if(err){console.log(err);}
+      // oxnp : originalXmlFileNameWithPath
+      oxnp = './file/videos/' + oxn
+      var parser = new xml2js.Parser()
+      fs.readFile(oxnp,function(err,data){
+        parser.parseString(data,function(err,result){
+          if(err) reject(Error(et.xe))
+          else if(result && result.i.d){
+            var content = result.i.d
+            var task = content.length
+            for(var i = 0; i < content.length; i++){
+              task--
+              var msg = content[i]._
+              if(msg) msg = msg.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, "")
+              var p = content[i].$.p
+              var chat = new Chat({
+                video_id:mid,
+                msg:msg,
+                p:p,
+                original_flag:'xml'
+              })
+              chat.save(function(err,doc){
+                if(err){console.log(err);}
+              })
+            }
+            if(task == 0) resolve(et.xs)
+          }else reject(Error(et.xe))
+        })
+      })
+    })
+  });
+}

@@ -51,4 +51,5 @@ module.exports = function(app){
   app.get('/imooc/:id',Info.player)//获取视频信息并进行播放
 
   app.get('/savebili',User.adminRequired,User.signinRequired,BiliApi.bilispider)
+  app.get('/bilidown',BiliApi.bilidown)
 }
