@@ -42,7 +42,7 @@ exports.bilispider = function (req,res) {
                 var video = $(this).find('div > a')
                 var id = video.attr('href').split('/video/')[1].split('/')[0]
                 var title = video.attr('title').trim().replace(/[\r\n]/g,"")
-                var summary = $(this).find('.v-desc').text()
+                var summary = $(this).find('.v-desc').text().replace(/[\r\n]/g,"")
                 console.log(id + ' : ' + title);
                 Movie.findOne({mid:id},function(err,movie){
                   if(err){console.log(err);}
@@ -101,13 +101,6 @@ exports.bilidown = function (req,res) {
           movie.update({mid:movie.mid},{$set:{video_url:vdu}},function(err,movieUpdate){
             if(err) console.log(err);
           })
-          saveXmlFileToDB(oxn).then(function(xv){
-            // xml 保存成功 xml文件数据保存到数据库：xv:Promise saveXmlFileToDB return value
-            console.log(movie.mid + ' : ' + et.xs);
-          },function(xv){
-            // xml 保存失败
-            console.log(movie.mid + ' : ' + et.xe);
-          })
         },function(tv){
           // 转码失败
           errlist.push(movie.mid)
@@ -159,40 +152,4 @@ function transcodeVideo(ovn,tvn){
       else resolve(et.ts)
     })
   })
-}
-
-function saveXmlFileToDB(mid,oxn){
-  return new Promise(function(resolve, reject) {
-    Chat.remove({original_flag:'xml', video_id:mid},function(err,obj){
-      if(err){console.log(err);}
-      // oxnp : originalXmlFileNameWithPath
-      oxnp = './file/videos/' + oxn
-      var parser = new xml2js.Parser()
-      fs.readFile(oxnp,function(err,data){
-        parser.parseString(data,function(err,result){
-          if(err) reject(Error(et.xe))
-          else if(result && result.i.d){
-            var content = result.i.d
-            var task = content.length
-            for(var i = 0; i < content.length; i++){
-              task--
-              var msg = content[i]._
-              if(msg) msg = msg.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, "")
-              var p = content[i].$.p
-              var chat = new Chat({
-                video_id:mid,
-                msg:msg,
-                p:p,
-                original_flag:'xml'
-              })
-              chat.save(function(err,doc){
-                if(err){console.log(err);}
-              })
-            }
-            if(task == 0) resolve(et.xs)
-          }else reject(Error(et.xe))
-        })
-      })
-    })
-  });
 }
