@@ -119,7 +119,7 @@ exports.bilidown = function (req,res) {
         console.log(movie.mid + ' : ' + et.de);
       })
       if(task == length) clearInterval(interval)
-    }, 60*1000);
+    }, 30*1000);
   })
   res.json({'开始下载':'downloading---'})
 };
@@ -135,9 +135,9 @@ var et = {
   xs:'XML to DB success'
 }
 
-function downloadFile(tvn,baseurl){
+function downloadFile(ovn,baseurl){
   return new Promise(function(resolve, reject){
-    var command = 'you-get  -o ./file/videos -O '+ tvn + ' ' + baseurl
+    var command = 'you-get  -o ./file/videos -O '+ ovn + ' ' + baseurl
     const child = exec(command,function(error,stdout,stderr){
       if(error) reject(Error(et.de))
       else if (stdout) {
@@ -153,8 +153,8 @@ function transcodeVideo(ovn,tvn){
   return new Promise(function(resolve, reject){
     var command = 'cd file/videos && ffmpeg -i ' + ovn + ' -codec copy ' + tvn
     const Transcoding = exec(command,function(error,stdout,stderr){
-      if(error){reject(Error(et.te))}
-      else{resolve(et.ts)}
+      if(error) reject(Error(et.te))
+      else resolve(et.ts)
     })
   })
 }
