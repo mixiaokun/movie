@@ -92,7 +92,7 @@ exports.bilidown = function (req,res) {
       var oxn = movie.title + '.cmt.xml'
       var vdu = '/videos/' + tvn
 
-      downloadFile(tvn,baseurl).then(function(dv){
+      downloadFile(ovn,baseurl).then(function(dv){
         // 下载成功 dv:Promise downloadFile return value
         console.log(movie.mid + ' : ' + et.ds);
         transcodeVideo(ovn,tvn).then(function(tv){
@@ -138,6 +138,7 @@ var et = {
 function downloadFile(ovn,baseurl){
   return new Promise(function(resolve, reject){
     var command = 'you-get  -o ./file/videos -O '+ ovn + ' ' + baseurl
+    console.log(command);
     const child = exec(command,function(error,stdout,stderr){
       if(error) reject(Error(et.de))
       else if (stdout) {
