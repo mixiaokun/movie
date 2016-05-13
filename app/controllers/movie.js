@@ -18,7 +18,7 @@ exports.list = function(req,res){
   var rank = req.query.rank
   if(rank){
     Movie
-    .find({})
+    .find({fake_category:{$not:/bili/}})
     .populate('category','name')
     .sort({'year':-1})
     .exec(function(err,movies){
@@ -30,7 +30,7 @@ exports.list = function(req,res){
     })
   }else {
     Movie
-    .find({})
+    .find({fake_category:{$not:/bili/}})
     .populate('category','name')
     .exec(function(err,movies){
       if(err){console.log(err);}
@@ -231,8 +231,7 @@ exports.saveBatch = function(req,res){
         })
       })
     }else {
-      console.log(title);
-      res.json({err:'movie have saved'})
+      res.json({err: title + ' movie have saved'})
     }
   })
 }

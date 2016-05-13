@@ -13,6 +13,8 @@ var MovieSchema = new mongoose.Schema({
     video_url:String,
     poster:String,
     fake_category:String,
+    rank_startTime:String,
+    rank_endTime:String,
     pv: {
       type: Number,
       default: 0

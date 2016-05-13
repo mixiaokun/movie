@@ -49,7 +49,9 @@ exports.bilispider = function (req,res) {
                       mid:id,
                       title:title,
                       summary:summary,
-                      fake_category:'bili'
+                      fake_category:'bili',
+                      rank_startTime:startTime,
+                      rank_endTime:endTime
                     })
                     biliVideoInfo.save(function(err){
                       if(err){console.log(err);}
@@ -72,6 +74,7 @@ exports.bilispider = function (req,res) {
 
 // exports.bilidown = function () {
 //   var errlist = []
+//   // startTime:'2016-02-01'
 //   Movie.find({fake_category:'bili'},function(err,docs) {
 //     var length = docs.length
 //     // 分成多个线程下载数据
@@ -87,6 +90,11 @@ exports.bilispider = function (req,res) {
 //       }, 10);
 //
 //       if(task)
-//     }, 24*60*60*1000);
+//     }, 30*60*1000);
 //   })
 // };
+
+
+exports.showbili = function (req,res) {
+
+};
