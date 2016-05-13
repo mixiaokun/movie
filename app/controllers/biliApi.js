@@ -87,36 +87,41 @@ exports.bilidown = function (req,res) {
       // tvn:TranscodedVideoName,
       // oxn:originalXmlFileName
       // vdu:video database url
-      var ovn = mid + ".flv";
+      var ovn = movie.mid + ".flv";
       var tvn = movie.mid + ".mp4";
       var oxn = movie.title + '.cmt.xml'
       var vdu = '/videos/' + tvn
 
       downloadFile(tvn,baseurl).then(function(dv){
         // 下载成功 dv:Promise downloadFile return value
+        console.log(movie.mid + ' : ' + et.ds);
         transcodeVideo(ovn,tvn).the(function(tv){
           // 转码成功 tv: Promise transcodeVideo return value
+          console.log(movie.mid + ' : ' + et.ts);
           movie.update({mid:movie.mid},{$set:{video_url:vdu}},function(err,movieUpdate){
             if(err) console.log(err);
           })
           saveXmlFileToDB(oxn).then(function(xv){
             // xml 保存成功 xml文件数据保存到数据库：xv:Promise saveXmlFileToDB return value
-            console.log(ex.xs);
+            console.log(movie.mid + ' : ' + et.xs);
           },function(xv){
             // xml 保存失败
-            console.log(et.xe);
+            console.log(movie.mid + ' : ' + et.xe);
           })
         },function(tv){
           // 转码失败
           errlist.push(movie.mid)
+          console.log(movie.mid + ' : ' + et.te);
         })
       },function(dv){
         // 下载失败
         errlist.push(movie.mid)
+        console.log(movie.mid + ' : ' + et.de);
       })
       if(task == length) clearInterval(interval)
     }, 60*1000);
   })
+  res.json({'开始下载':'downloading---'})
 };
 
 
