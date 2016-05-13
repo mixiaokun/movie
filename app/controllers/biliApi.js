@@ -95,7 +95,7 @@ exports.bilidown = function (req,res) {
       downloadFile(tvn,baseurl).then(function(dv){
         // 下载成功 dv:Promise downloadFile return value
         console.log(movie.mid + ' : ' + et.ds);
-        transcodeVideo(ovn,tvn).the(function(tv){
+        transcodeVideo(ovn,tvn).then(function(tv){
           // 转码成功 tv: Promise transcodeVideo return value
           console.log(movie.mid + ' : ' + et.ts);
           movie.update({mid:movie.mid},{$set:{video_url:vdu}},function(err,movieUpdate){
