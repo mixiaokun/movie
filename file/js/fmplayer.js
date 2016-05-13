@@ -6,7 +6,106 @@ $(function(){
   ranklist()
   datePicker()
   dropdownUserlist()
-  changeChatChanel('0000')
+
+  $.ajax({
+    url:'/movie/fm',
+    type:'post',
+    data:{
+      rank:$('.rank').val(),
+      startTime:$('.startTime').val(),
+      endTime:$('.endTime').val()
+    },
+    dataType:'json',
+    success:function(data){
+      var html = ''
+      console.log(data.length);
+      for(var i = 0; i < data.length; i++){
+        html += "<a class= \"list-group-item\">" + data[i].title + "</a>"
+      }
+      $('.videolist').html(html)
+    }
+  })
+
+
+  exports.setDate = function () {
+    var year = new Date().getFullYear()
+    var month = new Date().getMonth()
+    var date = new Date().getDate()
+    month = month + 1
+    month = month > 9 ? month : '0' + month
+    date = date > 9 ? date : '0' + date
+    var startTime = year + '-' + month + '-' + date
+    return startTime
+  }
+
+
+
+  // var socket = io()
+  // var $msgbox = $('.msg')
+  // var info = {}
+  // info.mid = mid
+  // info.name = $('.getname').text()
+  // if(info.name !== '请登录'){
+  //   socket.emit('join',info)
+  // }
+  // socket.on('usernames', function(data){
+  //   var html = '';
+  //   for(var i=0; i < data.length; i++){
+  //     html += "<li class=\"list-group-item\">" + data[i] + "</li>"
+  //   }
+  //   $('.userlist').html(html);
+  // });
+  //
+  // if(Cookies.get('name')){
+  //   $('.msg').keypress(function(e) {
+  //     if(e.which == 13) {
+  //       var info = {}
+  //       info.chanel = mid
+  //       info.msg = $msgbox.val()
+  //       socket.emit('send message', info, function(data){
+  //         displayError(data)
+  //       })
+  //       $('.msg').val('');
+  //       $('.dropdownUserlist').html('')
+  //     }
+  //   });
+  //
+  //   $('.sendmsg').click(function(e){
+  //     e.preventDefault();
+  //     var info = {}
+  //     info.chanel = mid
+  //     info.msg = $msgbox.val()
+  //     socket.emit('send message', info, function(data){
+  //       displayError(data)
+  //     })
+  //     $('.msg').val('');
+  //     $('.dropdownUserlist').html('')
+  //   })
+  // }
+  //
+  // $('video').on('ended',function(){
+  //   socket.disconnect()
+  // })
+  //
+  // socket.on('new message', function(data){
+  //   displayMsg(data);
+  // });
+  //
+  // socket.on('whisper',function(data){
+  //   displayWhisper(data)
+  // })
+  //
+  // socket.on('load old msgs',function(docs){
+  //   for(var i = docs.length - 1; i >= 0; i--){
+  //     displayMsg(docs[i]);
+  //   }
+  // })
+  //
+  // socket.on('load old secmsg',function(docs){
+  //   for(var i = docs.length - 1; i >= 0; i--){
+  //     displayWhisper(docs[i]);
+  //   }
+  // })
 })
 
 function preDo(){
@@ -31,21 +130,10 @@ function preDo(){
     var currentTime = $('video').get(0).currentTime
     displayTime(currentTime)
   })
+
 }
 
-function setDate(){
-  var year = new Date().getFullYear()
-  var month = new Date().getMonth()
-  var date = new Date().getDate()
 
-  month = month + 1
-  month = month > 9 ? month : '0' + month
-  date = date > 9 ? date : '0' + date
-
-  var startTime = year + '-' + month + '-' + date
-  $('.startTime').val(startTime)
-  $('.endTime').val(startTime)
-}
 
 function ranklist() {
   $('.submitRank').click(function(e){
@@ -255,75 +343,6 @@ function danmuplayer(mid){
 
   $('video').on('playing',function(){
     cm.startTimer();
-  })
-}
-
-function changeChatChanel(mid){
-  var socket = io()
-  var $msgbox = $('.msg')
-  var info = {}
-  info.mid = mid
-  info.name = $('.getname').text()
-  if(info.name !== '请登录'){
-    socket.emit('join',info)
-  }
-  socket.on('usernames', function(data){
-    var html = '';
-    for(var i=0; i < data.length; i++){
-      html += "<li class=\"list-group-item\">" + data[i] + "</li>"
-    }
-    $('.userlist').html(html);
-  });
-
-  if(Cookies.get('name')){
-    $('.msg').keypress(function(e) {
-      if(e.which == 13) {
-        var info = {}
-        info.chanel = mid
-        info.msg = $msgbox.val()
-        socket.emit('send message', info, function(data){
-          displayError(data)
-        })
-        $('.msg').val('');
-        $('.dropdownUserlist').html('')
-      }
-    });
-
-    $('.sendmsg').click(function(e){
-      e.preventDefault();
-      var info = {}
-      info.chanel = mid
-      info.msg = $msgbox.val()
-      socket.emit('send message', info, function(data){
-        displayError(data)
-      })
-      $('.msg').val('');
-      $('.dropdownUserlist').html('')
-    })
-  }
-
-  $('video').on('ended',function(){
-    socket.disconnect()
-  })
-
-  socket.on('new message', function(data){
-    displayMsg(data);
-  });
-
-  socket.on('whisper',function(data){
-    displayWhisper(data)
-  })
-
-  socket.on('load old msgs',function(docs){
-    for(var i = docs.length - 1; i >= 0; i--){
-      displayMsg(docs[i]);
-    }
-  })
-
-  socket.on('load old secmsg',function(docs){
-    for(var i = docs.length - 1; i >= 0; i--){
-      displayWhisper(docs[i]);
-    }
   })
 }
 

@@ -12,7 +12,7 @@ block content
           span 排序方式：
           select.rank
             option(value="stow") 收藏
-            option(value="review") 播放量
+            option(value="hot") 播放量
             option(value="review") 评论数
             option(value="promote") 硬币数
             option(value="comment") 用户评分
@@ -27,7 +27,7 @@ block content
         br
         .danmuPlayer(style="width:100%;background:#000;")
           video.player(style="width:100%;" data-setup="{}" autoplay="true")
-            source(src="/videos/av4617369.mp4",type="video/mp4")
+            source(src="/videos/av4261322.mp4",type="video/mp4")
           .commentContent.containerOfDanmu
         
         .btn-group(role="group")
@@ -44,6 +44,7 @@ block content
             a(href="#danmuList" data-toggle="tab") 弹幕列表
           li(class="")
             a(href="#userList" data-toggle="tab") 在线用户
+            
         .tab-content
           .videolist(class="tab-pane active" id="videoList")
           .danmulist(class="tab-pane" id="danmuList")

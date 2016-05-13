@@ -51,6 +51,7 @@ module.exports = function(app){
   app.post('/spider/getCookie',Info.getCookie)//获取imooc登录之后的cookie信息
   app.get('/imooc/:id',Info.player)//获取视频信息并进行播放
 
-  app.get('/savebili',User.adminRequired,User.signinRequired,BiliApi.bilispider)
-  app.get('/bilidown',BiliApi.bilidown)
+  app.get('/bilispider',User.signinRequired,User.adminRequired,BiliApi.bilispider)
+  
+  app.get('/bilidown',User.signinRequired,User.adminRequired,BiliApi.bilidown)
 }

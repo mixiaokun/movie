@@ -5,10 +5,25 @@ var request = require('request');
 var cheerio = require('cheerio');
 
 exports.bilispider = function (req,res) {
+  res.json({1:1})
   // 自2016开始-每个月的数据收集一次排行榜数据
+  // 收藏：stow
+  // 评论数：review
+  // 播放数：hot
+  // 硬币数：promote
+  // 用户评分：comment
+  // 弹幕数：damku
+  // 拼音：pinyin-{x}，x可以是A~Z中的一个
+  // 投稿时间：default(越新放在越前面)
   var rank = 'stow'
-  var month = new Date().getMonth() + 1
   var year = new Date().getFullYear()
+  var month = new Date().getMonth() + 1
+  var date = new Date().getDate()
+  month = month + 1
+  month = month > 9 ? month : '0' + month
+  date = date > 9 ? date : '0' + date
+  var updatetime = year + '-' + month + '-' + date
+
   if(year == 2016){
     var c = 0
     var interval = setInterval(function(){
@@ -43,7 +58,17 @@ exports.bilispider = function (req,res) {
                 var id = video.attr('href').split('/video/')[1].split('/')[0]
                 var title = video.attr('title').trim().replace(/[\r\n]/g,"")
                 var summary = $(this).find('.v-desc').text().replace(/[\r\n]/g,"")
+
+                var hot = $(this).find('.gk > span').text()
+                var damku = $(this).find('.dm > span').text()
+                var stow = $(this).find('.sc > span').text()
+                
+                var up_id = $(this).find('.up-info > a').attr('href').split('.com/')[1]
+                var up_name = $(this).find('.up-info > a').text()
+                var up_uploadtime = $(this).find('.up-info > span').text()
                 console.log(id + ' : ' + title);
+                console.log('hot: ' + hot + 'damku: ' + damku + 'stow: ' + stow);
+                console.log(up_id + up_name + up_uploadtime);
                 Movie.findOne({mid:id},function(err,movie){
                   if(err){console.log(err);}
                   if(!movie){
@@ -52,26 +77,35 @@ exports.bilispider = function (req,res) {
                       title:title,
                       summary:summary,
                       fake_category:'bili',
-                      rank_startTime:startTime,
-                      rank_endTime:endTime
+                      updatetime:updatetime,
+                      hot:hot,
+                      damku:damku,
+                      stow:stow,
+                      up_id:up_id,
+                      up_name:up_name,
+                      up_uploadtime:up_uploadtime,
                     })
                     biliVideoInfo.save(function(err){
                       if(err){console.log(err);}
                     })
                   }else {
-                    console.log(id +' have saved');
+                    movie.update({mid:id},{$set:{
+                      hot:hot,
+                      damku:damku,
+                      stow:stow,
+                      updatetime:updatetime
+                    }})
                   }
                 })
               })
             }
           })
           if(page == pageCount) clearInterval(interval1)
-        }, 10000);
+        }, 5000);
       })
       if(c == month) clearInterval(interval)
     },30000)
   }
-  res.json({start:'开始'})
 };
 
 exports.bilidown = function (req,res) {

@@ -51,6 +51,25 @@ if('development' === env){
   // mongoose.set('debug',true)
 }
 
+var CronJob = require('cron').CronJob;
+var BiliSpider = require('./app/controllers/biliApi')
+
+var job = new CronJob({
+  // Seconds: 0-59
+  // Minutes: 0-59
+  // Hours: 0-23
+  // Day of Month: 1-31
+  // Months: 0-11
+  // Day of Week: 0-6
+  cronTime: "00 00 00 * * 1-5",
+  onTick: function() {
+    BiliSpider.bilispider()
+  },
+  // onComplete 这个触发的条件hava some promblem
+  start:true, /* Start the job right now */
+  timeZone:"Asia/Shanghai" /* Time zone of this job. */
+});
+
 server.listen(port);
 require('./route')(app);
 require('./chatserver')(server);

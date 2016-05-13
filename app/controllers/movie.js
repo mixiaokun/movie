@@ -237,11 +237,21 @@ exports.saveBatch = function(req,res){
 }
 
 exports.fm = function(req,res){
-  // http://www.bilibili.tv/list/[stow]-[zone]-[page]-[year1]-[month1]-[day1]~[year2]-[month2]-[day2]-original.html
-  res.render('fm',{
-    title:"Movie FM"
+  var page = req.query.p || 0
+  var count = 20
+  var index = page * count
+  Movie.find({rank_startTime:'2016-05-01'},function(err,movies){
+    if(err) console.log(err);
+    var results = movies.slice(index, index + count)
+    res.render('fm',{
+      title:'FM',
+      movies:movies,
+      currentPage:(page + 1),
+      totalPage:Math.ceil(movies.length / count)
+    })
   })
 }
+
 
 exports.getPlayList = function(req,res){
   var rank = req.body.rank

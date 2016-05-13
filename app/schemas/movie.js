@@ -9,12 +9,20 @@ var MovieSchema = new mongoose.Schema({
     country:String,
     language:String,
     year:Number,
+    poster:String,
+    page:Number,
     summary:String,
     video_url:String,
-    poster:String,
+    updatetime:String,
     fake_category:String,
-    rank_startTime:String,
-    rank_endTime:String,
+
+    hot:Number,
+    damku:Number,
+    stow:Number,
+    up_id:Number,
+    up_name:String,
+    up_uploadtime:String,
+
     pv: {
       type: Number,
       default: 0
