@@ -160,7 +160,7 @@ exports.bilidown = function (req,res) {
 exports.bilidamku = function (req,res) {
   res.json({1:1})
   Movie
-    .find({up_uploadtime:{$gte:'2016-05-10 00:00',$lt:'2016-05-20 24:00'},video_url:{$exists:true}})
+    .find({up_uploadtime:{$gte:'2016-05-01 00:00',$lt:'2016-05-05 24:00'},{xml:true})
     .limit(20)
     .exec(function(err,movies){
       if(err) console.log(err);
