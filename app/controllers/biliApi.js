@@ -264,9 +264,9 @@ exports.updateMovies = function (req,res) {
       }if (b.test(file)) {
         var title = file.split(/.cmt.xml/)[0]
         console.log(title);
-        Movie.update({mid:title},{$set:{xml:true}},function(err){
+        Movie.update({title:title},{$set:{xml:true}},function(err){
           if(err) console.log(err);
-          console.log(mid + ' : ' + et.xh);
+          console.log(mid + ' : ' + et.xs);
         })
       }
     }
