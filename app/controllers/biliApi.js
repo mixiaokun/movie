@@ -126,12 +126,13 @@ exports.bilispider = function (req,res) {
 };
 
 exports.bilidown = function (req,res) {
+  res.json({'开始下载':'downloading---'})
   var errlist = []
   Movie
-    .find(({up_uploadtime:{$gte:'2016-05-14 00:00'}})
+    .find({up_uploadtime:{$gte:'2016-05-14 00:00'}})
     .sort({hot:-1})
     .limit(20)
-    .exec({function(err,movies){
+    .exec(function(err,movies){
       var task = 0
       var length = docs.length
       var interval = setInterval(function () {
@@ -170,9 +171,7 @@ exports.bilidown = function (req,res) {
           console.log(errlist);
         }
       }, 30*1000);
-    }
-  })
-  res.json({'开始下载':'downloading---'})
+    })
 };
 
 exports.updateMovies = function (req,res) {
