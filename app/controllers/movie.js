@@ -252,31 +252,25 @@ exports.fm = function(req,res){
   })
 }
 
-
-exports.getPlayList = function(req,res){
+exports.getList = function(req,res){
+  var p = req.body.p || 0
   var rank = req.body.rank
   var startTime = req.body.startTime
   var endTime = req.body.endTime
-  var baseurl = 'http://www.bilibili.tv/list/' + rank + '-20-1-' + startTime + '~' + endTime +'-original.html'
-  request(baseurl,function(error,response,body){
-    if (!error && response.statusCode == 200) {
-      var $ = cheerio.load(body)
-      var items = $('.vd-list').find('li')
-      var lists = []
-      items.each(function(item){
-        var video = $(this).find('div > a')
-        var id = video.attr('href').split('/video/')[1].split('/')[0]
-        var title = video.attr('title').trim().replace(/[\r\n]/g,"")
-        title = title.substring(0,30)
-        var item = {id:id,title:title}
-        lists.push(item)
-      })
-      res.json(lists)
-    }
-  })
+  var querystart = startTime + ' 00:00'
+  var queryend = endTime + ' 24:00'
+  Movie
+    .find({up_uploadtime:{$gte:querystart,$lt:queryend}})
+    .sort({rank:-1})
+    .skip(20 * p)
+    .limit(20)
+    .exec(function(err,movies){
+      if(err) console.log(err);
+      res.json(movies)
+    })
 }
 
-exports.getBilibiliVideoUrl = function(req,res){
+exports.getVideo = function(req,res){
   var mid = req.body.mid
   var pre_flag = req.body.pre_flag
   console.log('mid: ' + mid + ' pre_flag: ' +pre_flag);
@@ -497,6 +491,7 @@ function saveXmlFileToDB(mid,originalXmlFileName,callback){
           callback('err')
         }
       })
+
     })
   })
 }

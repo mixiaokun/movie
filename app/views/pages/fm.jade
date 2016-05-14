@@ -13,9 +13,6 @@ block content
           select.rank
             option(value="stow") 收藏
             option(value="hot") 播放量
-            option(value="review") 评论数
-            option(value="promote") 硬币数
-            option(value="comment") 用户评分
             option(value="damku") 弹幕数
         span 同时你可以选择需要原创视频排行榜时间
         .input-group.input-daterange.col-md-6(style="z-index:10000")
@@ -27,13 +24,13 @@ block content
         br
         .danmuPlayer(style="width:100%;background:#000;")
           video.player(style="width:100%;" data-setup="{}" autoplay="true")
-            source(src="/videos/av4261322.mp4",type="video/mp4")
+            source(type="video/mp4")
           .commentContent.containerOfDanmu
         
         .btn-group(role="group")
           button.btn.btn-default.VideoPlay(type="button") 播放
           button.btn.btn-default.VideoPause(type="button") 暂停
-          button.btn.btn-default.VideoNext(type="button") 下一个
+          //- button.btn.btn-default.VideoNext(type="button") 下一个
           button.btn.btn-default.VideoTime(type="button") 00:00
 
       .col-md-5

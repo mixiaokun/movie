@@ -3,6 +3,9 @@ const exec = require('child_process').exec;
 var Movie = require('../models/movie')
 var request = require('request');
 var cheerio = require('cheerio');
+var xml2js = require('xml2js');
+var path = require('path');
+var fs = require('fs');
 
 exports.bilispider = function (req,res) {
   res.json({1:1})
@@ -62,7 +65,7 @@ exports.bilispider = function (req,res) {
                 var hot = $(this).find('.gk > span').text()
                 var damku = $(this).find('.dm > span').text()
                 var stow = $(this).find('.sc > span').text()
-                
+
                 var up_id = $(this).find('.up-info > a').attr('href').split('.com/')[1]
                 var up_name = $(this).find('.up-info > a').text()
                 var up_uploadtime = $(this).find('.up-info > span').text()
@@ -89,7 +92,7 @@ exports.bilispider = function (req,res) {
                       if(err){console.log(err);}
                     })
                   }else {
-                    movie.update({mid:id},{$set:{
+                    Movie.update({mid:id},{$set:{
                       hot:hot,
                       damku:damku,
                       stow:stow,
@@ -110,46 +113,42 @@ exports.bilispider = function (req,res) {
 
 exports.bilidown = function (req,res) {
   var errlist = []
-  Movie.find({rank_startTime:'2016-05-01'},function(err,docs) {
+  Movie.find({up_uploadtime:{$gte:'2016-05-10 00:00'}},function(err,docs) {
     var task = 0
     var length = docs.length
     var interval = setInterval(function () {
       task++
       var movie = docs[task]
-      if(movie.video_url){
-        console.log('movie saved');
+      var mid = movie.mid
+
+      if(movie.video_url && movie.xml){
+        console.log(mid + ' : ' + et.vs);
       }else {
         var baseurl = "http://www.bilibili.com/video/" + movie.mid
         // ovn:originalVideoName,
         // tvn:TranscodedVideoName,
         // oxn:originalXmlFileName
-        // vdu:video database url
-        var ovn = movie.mid + ".flv";
-        var tvn = movie.mid + ".mp4";
-        var oxn = movie.title + '.cmt.xml'
-        var vdu = '/videos/' + tvn
+        var ovn = mid + ".flv";
+        var tvn = mid + ".mp4";
         downloadFile(ovn,baseurl).then(function(dv){
           // 下载成功 dv:Promise downloadFile return value
-          console.log(movie.mid + ' : ' + et.ds);
+          console.log(mid + ' : ' + et.ds);
           transcodeVideo(ovn,tvn).then(function(tv){
             // 转码成功 tv: Promise transcodeVideo return value
-            console.log(movie.mid + ' : ' + et.ts);
-            movie.update({mid:movie.mid},{$set:{video_url:vdu}},function(err,movieUpdate){
-              if(err) console.log(err);
-            })
+            console.log(mid + ' : ' + et.ts);
           },function(tv){
             // 转码失败
-            errlist.push(movie.mid)
-            console.log(movie.mid + ' : ' + et.te);
+            errlist.push(mid)
+            console.log(mid + ' : ' + et.te);
           })
         },function(dv){
           // 下载失败
-          errlist.push(movie.mid)
-          console.log(movie.mid + ' : ' + et.de);
+          errlist.push(mid)
+          console.log(mid + ' : ' + et.de);
         })
       }
       // 只下载前四十个，服务器磁盘不够用
-      if(task == 40) {
+      if(task == 20) {
         clearInterval(interval)
         console.log(errlist);
       }
@@ -158,6 +157,50 @@ exports.bilidown = function (req,res) {
   res.json({'开始下载':'downloading---'})
 };
 
+exports.bilidamku = function (req,res) {
+  res.json({1:1})
+  Movie
+    .find({up_uploadtime:{$gte:'2016-05-10 00:00',$lt:'2016-05-20 24:00'},video_url:{$exists:true}})
+    .limit(20)
+    .exec(function(err,movies){
+      if(err) console.log(err);
+      for (var i = 0; i < movies.length; i++) {
+        var mid = movies[i].mid
+        var title = movies[i].title
+        var oxn = title + '.cmt.xml'
+        var oxnp = './file/videos/' + oxn
+        var parser = new xml2js.Parser()
+        fs.readFile(oxnp,function(err,data){
+          if(data) {
+            console.log('success: '+mid);
+            parser.parseString(data,function(err,result){
+              if(err) console.log(err)
+              else if(result && result.i.d){
+                var content = result.i.d
+                var task = content.length
+                for(var i = 0; i < content.length; i++){
+                  task--
+                  var msg = content[i]._
+                  if(msg) msg = msg.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, "")
+                  var p = content[i].$.p
+                  var chat = new Chat({
+                    video_id:mid,
+                    msg:msg,
+                    p:p,
+                    original_flag:'xml'
+                  })
+                  chat.save(function(err,doc){
+                    if(err){console.log(err);}
+                  })
+                }
+                if(task == 0) console.log('xml to json 已保存到数据库');
+              }else console.log('err');
+            })
+          }else console.log('err: ' + mid);
+        })
+      }
+    })
+}
 
 // error type
 var et = {
@@ -165,14 +208,17 @@ var et = {
   ds:'Download success',
   te:'Trans Code err',
   ts:'Trans Code success',
+  us:'URL save to DB success',
   xe:'XML to DB err',
-  xs:'XML to DB success'
+  xs:'XML to DB success',
+  xh:'Local Have XML',
+  vs:'Movie have Saved'
 }
 
 function downloadFile(ovn,baseurl){
   return new Promise(function(resolve, reject){
     var command = 'you-get  -o ./file/videos -O '+ ovn + ' ' + baseurl
-    console.log(command);
+    // console.log(command);
     const child = exec(command,function(error,stdout,stderr){
       if(error) reject(Error(et.de))
       else if (stdout) {
@@ -186,11 +232,43 @@ function downloadFile(ovn,baseurl){
 
 function transcodeVideo(ovn,tvn){
   return new Promise(function(resolve, reject){
-    var command = 'cd file/videos && ffmpeg -i ' + ovn + ' -codec copy ' + tvn
-    console.log(command);
+
+    var command = 'cd file/videos && ffmpeg -i ' + ovn + ' -codec copy ' + tvn +' -y'
+    // console.log(command);
     const Transcoding = exec(command,function(error,stdout,stderr){
       if(error) reject(Error(et.te))
       else resolve(et.ts)
     })
   })
 }
+
+exports.updateMovies = function (req,res) {
+  // 所有数据以本地存在为准
+  // vdu:video database url
+  res.json({1:1})
+  var dirPath = path.dirname(process.argv[1]) + '/file/videos/'
+  fs.readdir(dirPath,function(err, files){
+    if (err) console.log(err);
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i]
+      var a = new RegExp(/\bav\d{7}\.mp4\b/g)
+      var b = new RegExp(/.*cmt\.xml/g)
+      if(a.test(file)){
+        console.log(mid);
+        var mid = file.split(/.mp4/)[0]
+        var vdu = '/videos/' + mid + '.mp4';
+        Movie.update({mid:mid},{$set:{video_url:vdu}},function(err){
+          if(err) console.log(err);
+          console.log(mid + ' : ' + et.us);
+        })
+      }if (b.test(file)) {
+        var title = file.split(/.cmt.xml/)[0]
+        console.log(title);
+        Movie.update({mid:title},{$set:{xml:true}},function(err){
+          if(err) console.log(err);
+          console.log(mid + ' : ' + et.xh);
+        })
+      }
+    }
+  });
+};

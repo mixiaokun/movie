@@ -22,6 +22,7 @@ var MovieSchema = new mongoose.Schema({
     up_id:Number,
     up_name:String,
     up_uploadtime:String,
+    xml:Boolean,
 
     pv: {
       type: Number,

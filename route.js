@@ -37,8 +37,8 @@ module.exports = function(app){
   app.post('/movie/saveBatch',Movie.saveBatch)//批量保存douban数据
   app.delete('/movie/list',Movie.del)//删除电影条目
   app.get('/movie/fm',Movie.fm)
-  app.post('/movie/fm',Movie.getPlayList)//获取播放列表
-  app.post('/movie/getBilibiliVideoUrl',Movie.getBilibiliVideoUrl)//获取bilibili视频播放地址,同时将下载视频，并将视频转码
+  app.post('/movie/fm',Movie.getList)//获取播放列表
+  app.post('/movie/getVideo',Movie.getVideo)//获取bilibili视频播放地址,同时将下载视频，并将视频转码
   app.get('/movie/:id', Movie.detail)//电影详情页
 
   app.get('/category/list',Movie.categorylist)//分类列表
@@ -52,6 +52,7 @@ module.exports = function(app){
   app.get('/imooc/:id',Info.player)//获取视频信息并进行播放
 
   app.get('/bilispider',User.signinRequired,User.adminRequired,BiliApi.bilispider)
-  
   app.get('/bilidown',User.signinRequired,User.adminRequired,BiliApi.bilidown)
+  app.get('/bilidamku',BiliApi.bilidamku)
+  app.get('/updateMovies',BiliApi.updateMovies)
 }

@@ -1,12 +1,27 @@
 var playerList = []
 
 $(function(){
-  preDo()
-  setDate()
-  ranklist()
-  datePicker()
-  dropdownUserlist()
 
+  // 格式化日期
+  var year = new Date().getFullYear()
+  var month = new Date().getMonth()
+  var date = new Date().getDate()
+  month = month + 1
+  month = month > 9 ? month : '0' + month
+  date = date > 9 ? date : '0' + date
+  var startTime = year + '-' + month + '-' + date
+  $('.startTime').val(startTime)
+  $('.endTime').val(startTime)
+
+  // 初始化日期选择插件
+  $('.input-daterange input').each(function() {
+    $(this).datepicker({
+      format: 'yyyy-mm-dd',
+      autoclose: true
+    });
+  });
+
+  // 初始化右侧用户播放列表
   $.ajax({
     url:'/movie/fm',
     type:'post',
@@ -18,28 +33,63 @@ $(function(){
     dataType:'json',
     success:function(data){
       var html = ''
-      console.log(data.length);
       for(var i = 0; i < data.length; i++){
-        html += "<a class= \"list-group-item\">" + data[i].title + "</a>"
+        var title = data[i].title.slice(0,32)
+        var mid = data[i].mid
+        html += "<a class = \" playbtn list-group-item\">" + title + "</a>"
       }
       $('.videolist').html(html)
     }
   })
 
-
-  exports.setDate = function () {
-    var year = new Date().getFullYear()
-    var month = new Date().getMonth()
-    var date = new Date().getDate()
-    month = month + 1
-    month = month > 9 ? month : '0' + month
-    date = date > 9 ? date : '0' + date
-    var startTime = year + '-' + month + '-' + date
-    return startTime
+  // 检测用户是否登录：这个并不正确
+  // 还是用ajax请求一下用户是否在线
+  var name;
+  if(Cookies.get('name')){
+    name = Cookies.get('name')
+    $('.getname').text(name)
+  }else{
+    console.log('---');
+    var html = '<a href=\'/user/sign\'>请登录</>'
+    $('.getname').html(html)
   }
 
+  // 用户下拉列表
+  $('.msg').on('keyup change', function() {
+    var html = ''
+    var text = $('.msg').val()
+    var userlist = []
+    var list = $('.userlist li')
+    for (var i = 0; i < list.length; i++) {
+      userlist.push($(list[i]).text())
+    }
+    if(text.substr(0,3) === '/w '){
+      for(var j = 0; j < userlist.length; j++){
+        html += "<li class = \"list-group-item\" onclick=\"selectname()\">" + userlist[j] + "</li>"
+      }
+      $('.dropdownUserlist').html(html)
+    }else{
+      $('.dropdownUserlist').html('')
+    }
+  })
+
+  // 绑定自定义播放器按钮
+  $('.VideoPlay').click(function(){
+    $('video').get(0).play()
+  })
+
+  $('.VideoPause').click(function(){
+    $('video').get(0).pause()
+  })
+
+  $('video').on('timeupdate',function(){
+    var currentTime = $('video').get(0).currentTime
+    displayTime(currentTime)
+  })
 
 
+
+  // ranklist()
   // var socket = io()
   // var $msgbox = $('.msg')
   // var info = {}
@@ -108,126 +158,106 @@ $(function(){
   // })
 })
 
-function preDo(){
-  var name;
-  if(Cookies.get('name')){
-    name = Cookies.get('name')
-    $('.getname').text(name)
-  }else{
-    console.log('---');
-    var html = '<a href=\'/user/sign\'>请登录</>'
-    $('.getname').html(html)
-  }
-  $('.VideoPlay').click(function(){
-    $('video').get(0).play()
-  })
 
-  $('.VideoPause').click(function(){
-    $('video').get(0).pause()
-  })
-
-  $('video').on('timeupdate',function(){
-    var currentTime = $('video').get(0).currentTime
-    displayTime(currentTime)
-  })
-
-}
-
-
-
-function ranklist() {
-  $('.submitRank').click(function(e){
-    e.preventDefault;
-    $.ajax({
-      url:'/movie/fm',
-      type:'post',
-      data:{
-        rank:$('.rank').val(),
-        startTime:$('.startTime').val(),
-        endTime:$('.endTime').val()
-      },
-      dataType:'json',
-      success:function(data){
-        var html = ''
-        for(var i = 0; i < data.length; i++){
-          html += "<li class=\"list-group-item\"> <a onclick=\"setSource(this,null)\" id= "+ data[i].id + ">"+ data[i].title + "</a></li>"
-          playerList.push(data[i].id)
-        }
-        $('.videolist').html(html)
-      }
-    })
-  })
-}
-
-function datePicker(){
-  $('.input-daterange input').each(function() {
-    $(this).datepicker({
-      format: 'yyyy-mm-dd',
-      autoclose: true
-    });
-  });
-}
-
-function setSource(obj,id){
-  if(!id){
-    var mid = $(obj).attr('id')
-    $('#load-player').empty()
-    if(mid){
-      Doajax(mid)
-    }
-  }else if(!obj){
-    var mid = id;
-    if(mid){
-      Doajax(mid)
+// 展示评论消息
+function displayMsg(data){
+  var list = $('.danmulist li')
+  if(list.length >= 10){
+    for (var i = 0; i < list.length-10; i++) {
+      list[i].remove()
     }
   }
+  // 如果是批量导入的bilibili评论
+  if(!data.msg_from){
+    data.msg_from = 'bili'
+  }
+  $('<li>').attr({
+    class:'list-group-item',
+  }).text(data.msg_from + ':'+data.msg)
+  .appendTo('.danmulist')
 }
 
-function Doajax(mid){
-  $.ajax({
-    url:'/movie/getBilibiliVideoUrl',
-    type:'post',
-    data:{mid:mid,pre_flag:'false'},
-    dataType:'json',
-    success:function(data){
-      $('.videolist li a').each(function(){
-        var active = $(this).attr('class','list-group-item-success')
-        if(active){
-          $(this).removeClass('list-group-item-success')
-        }
-      })
-      if(data.err){
-        var index = playerList.indexOf(mid)
-        playerList = playerList.splice(index,1)
-        $('#' + mid).parent().remove()
-        setSource(null,playerList[index])
-      }else{
-        var index = playerList.indexOf(mid)
-        preloadFile(playerList[index + 1])
-        updateListDom(mid)
-        danmuplayer(mid)
-        changeChatChanel(mid)
-        var playingItem = $('#' + mid)
-        $('source').attr('src',data.videoUrl)
-        playingItem.addClass('list-group-item-success')
-        var player = $('video').get(0)
-        player.pause()
-        player.load()
-        player.currentTime = 180
-        player.play()
-
-        $('video').on('ended',function(){
-          setSource(null,playerList[1])
-        })
-
-      }
-    }
-  })
+function displayError(data){
+  $('<li>').attr({class:'list-group-item'}).addClass('err')
+  .text('ERR:'+'-'+data)
+  .appendTo('.danmulist')
 }
+
+function displayWhisper(data){
+  $('<li>').attr({class:'list-group-item'}).addClass('whisper')
+  .text('SEC:'+ data.msg_from + '发送给'+data.msg_to + "-"+data.msg)
+  .appendTo('.danmulist')
+}
+
+// function ranklist() {
+//   $('.submitRank').click(function(e){
+//     e.preventDefault;
+//     $.ajax({
+//       url:'/movie/fm',
+//       type:'post',
+//       data:{
+//         rank:$('.rank').val(),
+//         startTime:$('.startTime').val(),
+//         endTime:$('.endTime').val()
+//       },
+//       dataType:'json',
+//       success:function(data){
+//         var html = ''
+//         for(var i = 0; i < data.length; i++){
+//           html += "<li class=\"list-group-item\"> <a onclick=\"setSource(this,null)\" id= "+ data[i].id + ">"+ data[i].title + "</a></li>"
+//           playerList.push(data[i].id)
+//         }
+//         $('.videolist').html(html)
+//       }
+//     })
+//   })
+// }
+
+function getVideo(mid){
+  console.log('ok');
+  // $('.playbtn').click(function(e){
+  //   e.preventDefault()
+  //   $.ajax({
+  //     url:'/movie/getVideo',
+  //     type:'post',
+  //     data:{mid:mid,pre_flag:'false'},
+  //     dataType:'json',
+  //     success:function(data){
+  //       if(data.err){
+  //         var index = playerList.indexOf(mid)
+  //         playerList = playerList.splice(index,1)
+  //         $('#' + mid).parent().remove()
+  //         setSource(null,playerList[index])
+  //       }else{
+  //
+  //
+  //         var index = playerList.indexOf(mid)
+  //         preloadFile(playerList[index + 1])
+  //         updateListDom(mid)
+  //         // danmuplayer(mid)
+  //         // changeChatChanel(mid)
+  //         var playingItem = $('#' + mid)
+  //         $('source').attr('src',data.videoUrl)
+  //         playingItem.addClass('list-group-item-success')
+  //         var player = $('video').get(0)
+  //         player.pause()
+  //         player.load()
+  //         player.currentTime = 180
+  //         player.play()
+  //
+  //         $('video').on('ended',function(){
+  //           setSource(null,playerList[1])
+  //         })
+  //       }
+  //     }
+  //   })
+  // })
+}
+
 
 function preloadFile(mid) {
   $.ajax({
-    url:'/movie/getBilibiliVideoUrl',
+    url:'/movie/getVideo',
     type:'post',
     data:{mid:mid,pre_flag:'true'},
     dataType:'json',
@@ -253,32 +283,6 @@ function updateListDom(mid){
     $('#' + playerList[i]).parent().insertAfter($('#' + playerList[length-1 + i]).parent())
   }
   playerList = playerList.slice(index, length + index)
-}
-
-function dropdownUserlist(){
-  $('.msg').on('keyup change', function() {
-    var html = ''
-    var text = $('.msg').val()
-    var userlist = []
-    var list = $('.userlist li')
-    for (var i = 0; i < list.length; i++) {
-      userlist.push($(list[i]).text())
-    }
-    if(text.substr(0,3) === '/w '){
-      for(var j = 0; j < userlist.length; j++){
-        html += "<li class = \"list-group-item\" onclick=\"selectname(this)\">" + userlist[j] + "</li>"
-      }
-      $('.dropdownUserlist').html(html)
-    }else{
-      $('.dropdownUserlist').html('')
-    }
-  })
-}
-
-function selectname(obj){
-  var target = $(obj)
-  var onlineUsername = target.text()
-  $('.msg').val('/w ' + onlineUsername)
 }
 
 function danmuplayer(mid){
@@ -346,37 +350,14 @@ function danmuplayer(mid){
   })
 }
 
-function displayMsg(data){
-  var list = $('.danmulist li')
-
-  if(list.length >= 10){
-    for (var i = 0; i < list.length-10; i++) {
-      list[i].remove()
-    }
-  }
-
-  if(!data.msg_from){
-    data.msg_from = 'bili'
-  }
-
-  $('<li>').attr({
-    class:'list-group-item',
-  }).text(data.msg_from + ':'+data.msg)
-  .appendTo('.danmulist')
+// 下拉选择用户-自动补全名称
+function selectname(obj){
+  var target = $(obj)
+  var onlineUsername = target.text()
+  $('.msg').val('/w ' + onlineUsername)
 }
 
-function displayError(data){
-  $('<li>').attr({class:'list-group-item'}).addClass('err')
-  .text('ERR:'+'-'+data)
-  .appendTo('.danmulist')
-}
-
-function displayWhisper(data){
-  $('<li>').attr({class:'list-group-item'}).addClass('whisper')
-  .text('SEC:'+ data.msg_from + '发送给'+data.msg_to + "-"+data.msg)
-  .appendTo('.danmulist')
-}
-
+// 格式化输出当前播放时间
 function displayTime(playhead){
   // 获取当前播放视频的时长
   var duration = $('video').get(0).duration

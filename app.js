@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var fs = require('fs');
-var port = process.env.PORT || 443;
+var port = process.env.PORT || 4000;
 var options = {
   key: fs.readFileSync('./file/SSL/ling.key','utf8'),
   cert: fs.readFileSync('./file/SSL/2_www.smkuse.info.crt','utf8'),
@@ -61,13 +61,13 @@ var job = new CronJob({
   // Day of Month: 1-31
   // Months: 0-11
   // Day of Week: 0-6
-  cronTime: "00 00 00 * * 1-5",
+  cronTime: "00 00 00 * * *",
   onTick: function() {
     BiliSpider.bilispider()
   },
   // onComplete 这个触发的条件hava some promblem
   start:true, /* Start the job right now */
-  timeZone:"Asia/Shanghai" /* Time zone of this job. */
+  timeZone:"Asia/Shanghai" /* Time zone of this job. use moment timezone */
 });
 
 server.listen(port);
