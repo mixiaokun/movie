@@ -127,46 +127,50 @@ exports.bilispider = function (req,res) {
 
 exports.bilidown = function (req,res) {
   var errlist = []
-  Movie.find({up_uploadtime:{$gte:'2016-05-14 00:00'}},function(err,docs) {
-    var task = 0
-    var length = docs.length
-    var interval = setInterval(function () {
-      task++
-      var movie = docs[task]
-      var mid = movie.mid
-
-      if(movie.video_url && movie.xml){
-        console.log(mid + ' : ' + et.vs);
-      }else {
-        var baseurl = "http://www.bilibili.com/video/" + movie.mid
-        // ovn:originalVideoName,
-        // tvn:TranscodedVideoName,
-        // oxn:originalXmlFileName
-        var ovn = mid + ".flv";
-        var tvn = mid + ".mp4";
-        downloadFile(ovn,baseurl).then(function(dv){
-          // 下载成功 dv:Promise downloadFile return value
-          console.log(mid + ' : ' + et.ds);
-          transcodeVideo(ovn,tvn).then(function(tv){
-            // 转码成功 tv: Promise transcodeVideo return value
-            console.log(mid + ' : ' + et.ts);
-          },function(tv){
-            // 转码失败
+  Movie
+    .find(({up_uploadtime:{$gte:'2016-05-14 00:00'}})
+    .sort({hot:-1})
+    .limit(20)
+    .exec({function(err,movies){
+      var task = 0
+      var length = docs.length
+      var interval = setInterval(function () {
+        task++
+        var movie = docs[task]
+        var mid = movie.mid
+        if(movie.video_url && movie.xml){
+          console.log(mid + ' : ' + et.vs);
+        }else {
+          var baseurl = "http://www.bilibili.com/video/" + movie.mid
+          // ovn:originalVideoName,
+          // tvn:TranscodedVideoName,
+          // oxn:originalXmlFileName
+          var ovn = mid + ".flv";
+          var tvn = mid + ".mp4";
+          downloadFile(ovn,baseurl).then(function(dv){
+            // 下载成功 dv:Promise downloadFile return value
+            console.log(mid + ' : ' + et.ds);
+            transcodeVideo(ovn,tvn).then(function(tv){
+              // 转码成功 tv: Promise transcodeVideo return value
+              console.log(mid + ' : ' + et.ts);
+            },function(tv){
+              // 转码失败
+              errlist.push(mid)
+              console.log(mid + ' : ' + et.te);
+            })
+          },function(dv){
+            // 下载失败
             errlist.push(mid)
-            console.log(mid + ' : ' + et.te);
+            console.log(mid + ' : ' + et.de);
           })
-        },function(dv){
-          // 下载失败
-          errlist.push(mid)
-          console.log(mid + ' : ' + et.de);
-        })
-      }
-      // 只下载前四十个，服务器磁盘不够用
-      if(task == 20) {
-        clearInterval(interval)
-        console.log(errlist);
-      }
-    }, 30*1000);
+        }
+        // 只下载前四十个，服务器磁盘不够用
+        if(task == 20) {
+          clearInterval(interval)
+          console.log(errlist);
+        }
+      }, 30*1000);
+    }
   })
   res.json({'开始下载':'downloading---'})
 };
