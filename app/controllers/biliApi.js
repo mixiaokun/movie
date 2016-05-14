@@ -8,6 +8,19 @@ var xml2js = require('xml2js');
 var path = require('path');
 var fs = require('fs');
 
+// error type
+var et = {
+  de:'Download err',
+  ds:'Download success',
+  te:'Trans Code err',
+  ts:'Trans Code success',
+  us:'URL save to DB success',
+  xe:'XML to DB err',
+  xs:'XML to DB success',
+  xh:'Local Have XML',
+  vs:'Movie have Saved'
+}
+
 exports.bilispider = function (req,res) {
   res.json({1:1})
   // 自2016开始-每个月的数据收集一次排行榜数据
@@ -114,7 +127,7 @@ exports.bilispider = function (req,res) {
 
 exports.bilidown = function (req,res) {
   var errlist = []
-  Movie.find({up_uploadtime:{$gte:'2016-05-10 00:00'}},function(err,docs) {
+  Movie.find({up_uploadtime:{$gte:'2016-05-14 00:00'}},function(err,docs) {
     var task = 0
     var length = docs.length
     var interval = setInterval(function () {
@@ -156,6 +169,37 @@ exports.bilidown = function (req,res) {
     }, 30*1000);
   })
   res.json({'开始下载':'downloading---'})
+};
+
+exports.updateMovies = function (req,res) {
+  // 所有数据以本地存在为准
+  // vdu:video database url
+  res.json({1:1})
+  var dirPath = path.dirname(process.argv[1]) + '/file/videos/'
+  fs.readdir(dirPath,function(err, files){
+    if (err) console.log(err);
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i]
+      var a = new RegExp(/\bav\d{7}\.mp4\b/g)
+      var b = new RegExp(/.*cmt\.xml/g)
+      if(a.test(file)){
+        console.log(mid);
+        var mid = file.split(/.mp4/)[0]
+        var vdu = '/videos/' + mid + '.mp4';
+        Movie.update({mid:mid},{$set:{video_url:vdu}},function(err){
+          if(err) console.log(err);
+          console.log(mid + ' : ' + et.us);
+        })
+      }if (b.test(file)) {
+        var title = file.split(/.cmt.xml/)[0]
+        console.log(title);
+        Movie.update({title:title},{$set:{xml:true}},function(err){
+          if(err) console.log(err);
+          console.log(mid + ' : ' + et.xs);
+        })
+      }
+    }
+  });
 };
 
 exports.bilidamku = function (req,res) {
@@ -203,23 +247,10 @@ exports.bilidamku = function (req,res) {
     })
 }
 
-// error type
-var et = {
-  de:'Download err',
-  ds:'Download success',
-  te:'Trans Code err',
-  ts:'Trans Code success',
-  us:'URL save to DB success',
-  xe:'XML to DB err',
-  xs:'XML to DB success',
-  xh:'Local Have XML',
-  vs:'Movie have Saved'
-}
-
 function downloadFile(ovn,baseurl){
   return new Promise(function(resolve, reject){
     var command = 'you-get  -o ./file/videos -O '+ ovn + ' ' + baseurl
-    // console.log(command);
+    console.log(command);
     const child = exec(command,function(error,stdout,stderr){
       if(error) reject(Error(et.de))
       else if (stdout) {
@@ -233,7 +264,6 @@ function downloadFile(ovn,baseurl){
 
 function transcodeVideo(ovn,tvn){
   return new Promise(function(resolve, reject){
-
     var command = 'cd file/videos && ffmpeg -i ' + ovn + ' -codec copy ' + tvn +' -y'
     // console.log(command);
     const Transcoding = exec(command,function(error,stdout,stderr){
@@ -242,34 +272,3 @@ function transcodeVideo(ovn,tvn){
     })
   })
 }
-
-exports.updateMovies = function (req,res) {
-  // 所有数据以本地存在为准
-  // vdu:video database url
-  res.json({1:1})
-  var dirPath = path.dirname(process.argv[1]) + '/file/videos/'
-  fs.readdir(dirPath,function(err, files){
-    if (err) console.log(err);
-    for (var i = 0; i < files.length; i++) {
-      var file = files[i]
-      var a = new RegExp(/\bav\d{7}\.mp4\b/g)
-      var b = new RegExp(/.*cmt\.xml/g)
-      if(a.test(file)){
-        console.log(mid);
-        var mid = file.split(/.mp4/)[0]
-        var vdu = '/videos/' + mid + '.mp4';
-        Movie.update({mid:mid},{$set:{video_url:vdu}},function(err){
-          if(err) console.log(err);
-          console.log(mid + ' : ' + et.us);
-        })
-      }if (b.test(file)) {
-        var title = file.split(/.cmt.xml/)[0]
-        console.log(title);
-        Movie.update({title:title},{$set:{xml:true}},function(err){
-          if(err) console.log(err);
-          console.log(mid + ' : ' + et.xs);
-        })
-      }
-    }
-  });
-};

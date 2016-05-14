@@ -2,94 +2,10 @@ var playerList = []
 
 $(function(){
 
-  // 格式化日期
-  var year = new Date().getFullYear()
-  var month = new Date().getMonth()
-  var date = new Date().getDate()
-  month = month + 1
-  month = month > 9 ? month : '0' + month
-  date = date > 9 ? date : '0' + date
-  var startTime = year + '-' + month + '-' + date
-  $('.startTime').val(startTime)
-  $('.endTime').val(startTime)
+  init()
+  initGetList()
+  clickGetList()
 
-  // 初始化日期选择插件
-  $('.input-daterange input').each(function() {
-    $(this).datepicker({
-      format: 'yyyy-mm-dd',
-      autoclose: true
-    });
-  });
-
-  // 初始化右侧用户播放列表
-  $.ajax({
-    url:'/movie/fm',
-    type:'post',
-    data:{
-      rank:$('.rank').val(),
-      startTime:$('.startTime').val(),
-      endTime:$('.endTime').val()
-    },
-    dataType:'json',
-    success:function(data){
-      var html = ''
-      for(var i = 0; i < data.length; i++){
-        var title = data[i].title.slice(0,32)
-        var mid = data[i].mid
-        html += "<a class = \" playbtn list-group-item\">" + title + "</a>"
-      }
-      $('.videolist').html(html)
-    }
-  })
-
-  // 检测用户是否登录：这个并不正确
-  // 还是用ajax请求一下用户是否在线
-  var name;
-  if(Cookies.get('name')){
-    name = Cookies.get('name')
-    $('.getname').text(name)
-  }else{
-    console.log('---');
-    var html = '<a href=\'/user/sign\'>请登录</>'
-    $('.getname').html(html)
-  }
-
-  // 用户下拉列表
-  $('.msg').on('keyup change', function() {
-    var html = ''
-    var text = $('.msg').val()
-    var userlist = []
-    var list = $('.userlist li')
-    for (var i = 0; i < list.length; i++) {
-      userlist.push($(list[i]).text())
-    }
-    if(text.substr(0,3) === '/w '){
-      for(var j = 0; j < userlist.length; j++){
-        html += "<li class = \"list-group-item\" onclick=\"selectname()\">" + userlist[j] + "</li>"
-      }
-      $('.dropdownUserlist').html(html)
-    }else{
-      $('.dropdownUserlist').html('')
-    }
-  })
-
-  // 绑定自定义播放器按钮
-  $('.VideoPlay').click(function(){
-    $('video').get(0).play()
-  })
-
-  $('.VideoPause').click(function(){
-    $('video').get(0).pause()
-  })
-
-  $('video').on('timeupdate',function(){
-    var currentTime = $('video').get(0).currentTime
-    displayTime(currentTime)
-  })
-
-
-
-  // ranklist()
   // var socket = io()
   // var $msgbox = $('.msg')
   // var info = {}
@@ -159,6 +75,7 @@ $(function(){
 })
 
 
+
 // 展示评论消息
 function displayMsg(data){
   var list = $('.danmulist li')
@@ -189,102 +106,140 @@ function displayWhisper(data){
   .appendTo('.danmulist')
 }
 
-// function ranklist() {
-//   $('.submitRank').click(function(e){
-//     e.preventDefault;
-//     $.ajax({
-//       url:'/movie/fm',
-//       type:'post',
-//       data:{
-//         rank:$('.rank').val(),
-//         startTime:$('.startTime').val(),
-//         endTime:$('.endTime').val()
-//       },
-//       dataType:'json',
-//       success:function(data){
-//         var html = ''
-//         for(var i = 0; i < data.length; i++){
-//           html += "<li class=\"list-group-item\"> <a onclick=\"setSource(this,null)\" id= "+ data[i].id + ">"+ data[i].title + "</a></li>"
-//           playerList.push(data[i].id)
-//         }
-//         $('.videolist').html(html)
-//       }
-//     })
-//   })
-// }
 
-function getVideo(mid){
-  console.log('ok');
-  // $('.playbtn').click(function(e){
-  //   e.preventDefault()
-  //   $.ajax({
-  //     url:'/movie/getVideo',
-  //     type:'post',
-  //     data:{mid:mid,pre_flag:'false'},
-  //     dataType:'json',
-  //     success:function(data){
-  //       if(data.err){
-  //         var index = playerList.indexOf(mid)
-  //         playerList = playerList.splice(index,1)
-  //         $('#' + mid).parent().remove()
-  //         setSource(null,playerList[index])
-  //       }else{
-  //
-  //
-  //         var index = playerList.indexOf(mid)
-  //         preloadFile(playerList[index + 1])
-  //         updateListDom(mid)
-  //         // danmuplayer(mid)
-  //         // changeChatChanel(mid)
-  //         var playingItem = $('#' + mid)
-  //         $('source').attr('src',data.videoUrl)
-  //         playingItem.addClass('list-group-item-success')
-  //         var player = $('video').get(0)
-  //         player.pause()
-  //         player.load()
-  //         player.currentTime = 180
-  //         player.play()
-  //
-  //         $('video').on('ended',function(){
-  //           setSource(null,playerList[1])
-  //         })
-  //       }
-  //     }
-  //   })
-  // })
+// 初始
+function init(){
+  // 格式化日期
+  var year = new Date().getFullYear()
+  var month = new Date().getMonth()
+  var date = new Date().getDate()
+  month = month + 1
+  month = month > 9 ? month : '0' + month
+  date = date > 9 ? date : '0' + date
+  var startTime = year + '-' + month + '-' + date
+  $('.startTime').val(startTime)
+  $('.endTime').val(startTime)
+
+  // 初始化日期选择插件
+  $('.input-daterange input').each(function() {
+    $(this).datepicker({
+      format: 'yyyy-mm-dd',
+      autoclose: true
+    });
+  });
+
+  // 检测用户是否登录：这个并不正确
+  // 还是用ajax请求一下用户是否在线
+  var name;
+  if(Cookies.get('name')){
+    name = Cookies.get('name')
+    $('.getname').text(name)
+  }else{
+    console.log('---');
+    var html = '<a href=\'/user/sign\'>请登录</>'
+    $('.getname').html(html)
+  }
+
+  // 用户下拉列表
+  $('.msg').on('keyup change', function() {
+    var html = ''
+    var text = $('.msg').val()
+    var userlist = []
+    var list = $('.userlist li')
+    for (var i = 0; i < list.length; i++) {
+      userlist.push($(list[i]).text())
+    }
+    if(text.substr(0,3) === '/w '){
+      for(var j = 0; j < userlist.length; j++){
+        html += "<li class = \"list-group-item\" onclick=\"selectname()\">" + userlist[j] + "</li>"
+      }
+      $('.dropdownUserlist').html(html)
+    }else{
+      $('.dropdownUserlist').html('')
+    }
+  })
+
+  // 绑定自定义播放器按钮
+  $('.VideoPlay').click(function(){
+    $('video').get(0).play()
+  })
+
+  $('.VideoPause').click(function(){
+    $('video').get(0).pause()
+  })
+
+  $('video').on('timeupdate',function(){
+    var currentTime = $('video').get(0).currentTime
+    displayTime(currentTime)
+  })
+
+
 }
 
-
-function preloadFile(mid) {
+// 初始化播放列表
+function initGetList(){
   $.ajax({
-    url:'/movie/getVideo',
+    url:'/movie/fm',
     type:'post',
-    data:{mid:mid,pre_flag:'true'},
+    data:{
+      rank:$('.rank').val(),
+      startTime:$('.startTime').val(),
+      endTime:$('.endTime').val()
+    },
     dataType:'json',
     success:function(data){
-      if(data.videoUrl){
-        console.log('预处理成功');
-      }else if(data.err){
-        console.log('未能正确处理视频信息，跳过该节点' + $('#' + mid).text() );
-        var index = playerList.indexOf(data.err)
-        playerList = playerList.splice(index,1)
-        $('#' + mid).parent().remove()
+      var html = ''
+      for(var i = 0; i < data.length; i++){
+        var title = data[i].title.slice(0,32)
+        var mid = data[i].mid
+        html += "<a class = \" playbtn list-group-item\" id = "+ mid +">" + title + "</a>"
       }
+      $('.videolist').html(html)
+      getVideo()
     }
   })
 }
 
-function updateListDom(mid){
-  var index = playerList.indexOf(mid)
-  var length = playerList.length
-  var list = $('.videolist li a')
-  for(var i = 0; i < index; i++){
-    playerList[length + i] = $(list[i]).attr('id')
-    $('#' + playerList[i]).parent().insertAfter($('#' + playerList[length-1 + i]).parent())
-  }
-  playerList = playerList.slice(index, length + index)
+// 点击获取播放列表
+function clickGetList() {
+  $('.submitRank').click(function(e){
+    e.preventDefault;
+    initGetList()
+  })
 }
 
+// 获取视频
+function getVideo(mid){
+  $('.playbtn').click(function(e){
+    e.preventDefault()
+    var target = $(this)
+    var mid = target.attr('id')
+    $.ajax({
+      url:'/movie/getVideo',
+      type:'post',
+      data:{mid:mid},
+      dataType:'json',
+      success:function(data){
+        if(data.err){
+          console.log(data.err);
+        }else if(data.video_url) {
+          console.log('success');
+          $('source').attr('src',data.video_url)
+          var player = $('video').get(0)
+          player.pause()
+          player.load()
+          player.currentTime = 180
+          player.play()
+          danmuplayer(mid)
+        }else {
+          console.log('数据库中暂时还未同步相应数据');
+        }
+      }
+    })
+  })
+}
+
+// 加载弹幕播放器
 function danmuplayer(mid){
   var cm = new CommentManager($('.commentContent').get(0));
   cm.init();
@@ -349,6 +304,9 @@ function danmuplayer(mid){
     cm.startTimer();
   })
 }
+
+
+
 
 // 下拉选择用户-自动补全名称
 function selectname(obj){
