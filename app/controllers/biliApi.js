@@ -1,6 +1,7 @@
 var Promise = require('es6-promise').Promise;
 const exec = require('child_process').exec;
 var Movie = require('../models/movie')
+var Chat = require('../models/chat')
 var request = require('request');
 var cheerio = require('cheerio');
 var xml2js = require('xml2js');
