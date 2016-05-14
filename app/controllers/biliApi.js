@@ -132,7 +132,7 @@ exports.bilidown = function (req,res) {
     .find({up_uploadtime:{$gte:'2016-05-14 00:00'}})
     .sort({hot:-1})
     .limit(20)
-    .exec(function(err,movies){
+    .exec(function(err,docs){
       var task = 0
       var length = docs.length
       var interval = setInterval(function () {
