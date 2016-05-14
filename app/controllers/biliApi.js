@@ -178,31 +178,39 @@ exports.updateMovies = function (req,res) {
   // 所有数据以本地存在为准
   // vdu:video database url
   res.json({1:1})
-  var dirPath = path.dirname(process.argv[1]) + '/file/videos/'
-  fs.readdir(dirPath,function(err, files){
-    if (err) console.log(err);
-    for (var i = 0; i < files.length; i++) {
-      var file = files[i]
-      var a = new RegExp(/\bav\d{7}\.mp4\b/g)
-      var b = new RegExp(/.*cmt\.xml/g)
+  var a = new RegExp(/\bav\d{7}\.mp4\b/g)
+  var b = new RegExp(/.*cmt\.xml/g)
+
+  Movie.update({},{$unset:{video_url:1,xml:1}},{multi:true},function(err){
+    if(err) console.log(err)
+    var dirPath = path.dirname(process.argv[1]) + '/file/videos/'
+    var files = fs.readdirSync(dirPath)
+    var task = files.length
+    console.log(task);
+
+    var interval =  setInterval(function () {
+      task--
+      var file = files[task]
+      // console.log(task + ' : ' + file + ' : ' + a.test(file)+' : ' + b.test(file));
       if(a.test(file)){
-        console.log(mid);
         var mid = file.split(/.mp4/)[0]
         var vdu = '/videos/' + mid + '.mp4';
+        console.log(task + ' : ' + mid);
         Movie.update({mid:mid},{$set:{video_url:vdu}},function(err){
           if(err) console.log(err);
-          console.log(mid + ' : ' + et.us);
         })
-      }if (b.test(file)) {
+      }else if(b.test(file)) {
         var title = file.split(/.cmt.xml/)[0]
-        console.log(title);
+        console.log(task + ' : ' + title);
         Movie.update({title:title},{$set:{xml:true}},function(err){
           if(err) console.log(err);
-          console.log(mid + ' : ' + et.xs);
         })
+      }else {
+        console.log(task +' : ' + file + ' : ' + 'err' );
       }
-    }
-  });
+      if(task == 0) clearInterval(interval)
+    }, 100);
+  })
 };
 
 exports.bilidamku = function (req,res) {
