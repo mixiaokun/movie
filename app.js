@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var fs = require('fs');
-var port = process.env.PORT || 4000;
+var port = process.env.PORT || 443;
 var options = {
   key: fs.readFileSync('./file/SSL/ling.key','utf8'),
   cert: fs.readFileSync('./file/SSL/2_www.smkuse.info.crt','utf8'),

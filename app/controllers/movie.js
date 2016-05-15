@@ -276,7 +276,8 @@ var et = {
 }
 
 exports.getVideo = function (req,res) {
-  var mid = req.body.mid
+  
+  var mid = req.body.mid || 'av4041068'
   var xmlHeader = {version:"1.0", encoding:"UTF-8"}
   Chat.find({video_id:mid},function(err,docs){
     if(docs){
