@@ -34,7 +34,7 @@ exports.bilispider = function (req,res) {
   // 投稿时间：default(越新放在越前面)
   var rank = 'stow'
   var year = new Date().getFullYear()
-  var month = new Date().getMonth() + 1
+  var month = new Date().getMonth()
   var date = new Date().getDate()
   month = month + 1
   month = month > 9 ? month : '0' + month
@@ -111,7 +111,9 @@ exports.bilispider = function (req,res) {
                       damku:damku,
                       stow:stow,
                       updatetime:updatetime
-                    }})
+                    }},function(err){
+                      if(err){console.log(err);}
+                    })
                   }
                 })
               })
@@ -120,7 +122,7 @@ exports.bilispider = function (req,res) {
           if(page == pageCount) clearInterval(interval1)
         }, 5000);
       })
-      if(c == month) clearInterval(interval)
+      if(c == month-1) clearInterval(interval)
     },30000)
   }
 };
@@ -166,7 +168,7 @@ exports.bilidown = function (req,res) {
           })
         }
         // 只下载前四十个，服务器磁盘不够用
-        if(task == 20) {
+        if(task == 19) {
           clearInterval(interval)
           console.log(errlist);
         }
@@ -178,8 +180,8 @@ exports.updateMovies = function (req,res) {
   // 所有数据以本地存在为准
   // vdu:video database url
   res.json({1:1})
-  var a = new RegExp(/\bav\d{7}\.mp4\b/g)
-  var b = new RegExp(/.*cmt\.xml/g)
+  var a = new RegExp(/\bav\d{7}\.mp4\b/)
+  var b = new RegExp(/.*cmt\.xml/)
 
   Movie.update({},{$unset:{video_url:1,xml:1}},{multi:true},function(err){
     if(err) console.log(err)
@@ -191,51 +193,61 @@ exports.updateMovies = function (req,res) {
     var interval =  setInterval(function () {
       task--
       var file = files[task]
-      // console.log(task + ' : ' + file + ' : ' + a.test(file)+' : ' + b.test(file));
       if(a.test(file)){
         var mid = file.split(/.mp4/)[0]
         var vdu = '/videos/' + mid + '.mp4';
-        console.log(task + ' : ' + mid);
         Movie.update({mid:mid},{$set:{video_url:vdu}},function(err){
           if(err) console.log(err);
+          console.log(task + ' : ' + mid);
         })
       }else if(b.test(file)) {
         var title = file.split(/.cmt.xml/)[0]
-        console.log(task + ' : ' + title);
         Movie.update({title:title},{$set:{xml:true}},function(err){
           if(err) console.log(err);
+          console.log(task + ' : ' + title);
         })
       }else {
-        console.log(task +' : ' + file + ' : ' + 'err' );
+        console.log('err');
       }
+
       if(task == 0) clearInterval(interval)
-    }, 100);
+    }, 500);
   })
 };
+
+
+
+
 
 exports.bilidamku = function (req,res) {
   res.json({1:1})
   Movie
-    .find({up_uploadtime:{$gte:'2016-05-01 00:00',$lt:'2016-05-05 24:00'},xml:true})
+    .find({up_uploadtime:{$gte:'2016-05-14 00:00',$lt:'2016-05-15 00:00'},xml:true})
     .limit(20)
     .exec(function(err,movies){
       if(err) console.log(err);
-      for (var i = 0; i < movies.length; i++) {
+      var i = 0
+      var interval =  setInterval(function () {
+        i++
         var mid = movies[i].mid
+        console.log(mid);
+        
         var title = movies[i].title
         var oxn = title + '.cmt.xml'
         var oxnp = './file/videos/' + oxn
         var parser = new xml2js.Parser()
+
         fs.readFile(oxnp,function(err,data){
           if(data) {
-            console.log('success: ' + mid);
             parser.parseString(data,function(err,result){
               if(err) console.log(err)
               else if(result && result.i.d){
                 var content = result.i.d
                 var task = content.length
-                for(var i = 0; i < content.length; i++){
-                  task--
+                console.log(task);
+
+                for(var i = 0; i < task; i++){
+                  // console.log(mid + ' : ' +task + ' : ' + i);
                   var msg = content[i]._
                   if(msg) msg = msg.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, "")
                   var p = content[i].$.p
@@ -249,12 +261,12 @@ exports.bilidamku = function (req,res) {
                     if(err){console.log(err);}
                   })
                 }
-                if(task == 0) console.log('xml to json 已保存到数据库');
-              }else console.log('err');
+              }else console.log('err')
             })
-          }else console.log('err: ' + mid);
+          }else console.log('err: ' + mid)
         })
-      }
+        if(i >= movies.length-1) clearInterval(interval)
+      }, 1000);
     })
 }
 

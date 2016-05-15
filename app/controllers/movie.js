@@ -277,262 +277,42 @@ var et = {
 
 exports.getVideo = function (req,res) {
   var mid = req.body.mid
-  Movie.findOne({mid:mid},function(err,movie){
-    if(err) console.log(err)
-    if(movie) res.json(movie)
-    else res.json({err:a})
-  })
-};
-
-// exports.getVideo = function(req,res){
-//   var mid = req.body.mid
-//   var pre_flag = req.body.pre_flag
-//   console.log('mid: ' + mid + ' pre_flag: ' +pre_flag);
-//   var baseurl = "http://www.bilibili.com/video/" + mid
-//   const getXmlFileName = exec('you-get -u ' + baseurl, function(error, stdout, stderr){
-//     if(error){
-//       console.log('处理视频信息出错');
-//       res.json({err:mid})
-//     }else if(stderr){
-//       console.log('读取视频信息出错');
-//       res.json({err:mid})
-//     }else if(stdout){
-//       var title = stdout.split('Title:')[1].split('Type')[0].trim()
-//       var   originalVideoName = mid + ".flv";
-//       var TranscodedVideoName = mid + ".mp4";
-//       var originalXmlFileName = title + '.cmt.xml'
-//       var DBXmlFileName       = mid + '.xml'
-//       var videoUrl = '/videos/' + TranscodedVideoName
-//       var xmlUrl   = '/videos/' + DBXmlFileName
-//       var dirPath = path.dirname(process.argv[1]) + '/file/videos/'
-//       checkLocalFile(dirPath,TranscodedVideoName).then(function(val){
-//         console.log('val: ' + val );
-//         if(val == 1){
-//           console.log('mp4 file exit');
-//           checkDbMid(mid).then(function(val){
-//             if(val == 0){
-//               console.log('downloading: xml');
-//               downloadFile(originalVideoName,baseurl).then(function(val){
-//                 saveXmlFileToDB(mid,originalXmlFileName,function(data){
-//                   if(data === 'ok'){
-//                     console.log('成功保存xml文件到数据库--success--返回视频和xml文件');
-//                     saveDBXmlFileToLocal(mid,function(data){
-//                       if(data === 'ok'){
-//                         var _movie = new Movie({
-//                           title:title,
-//                           mid:mid,
-//                           video_url:videoUrl
-//                         })
-//                         _movie.save(function(err,movie) {
-//                           if(err){return console.log(err);}
-//                           res.json({
-//                             videoUrl : videoUrl,
-//                             xmlUrl   : xmlUrl
-//                           })
-//                         })
-//                       }else if (data == 'err') {
-//                         res.json({err:mid})
-//                       }
-//                     })
-//                   }else if(data === 'err'){
-//                     console.log('保存xml文件到数据库出错--error--只返回视频数据');
-//                     res.json({videoUrl : videoUrl})
-//                   }
-//                 })
-//               },function(val){
-//                 // 异常
-//                 console.log('download err');
-//                 res.json({err:mid})
-//               })
-//             }else if (val == 'n') {
-//               saveDBXmlFileToLocal(mid,function(data){
-//                 res.json({
-//                   videoUrl:videoUrl,
-//                   xmlUrl:xmlUrl
-//                 })
-//               })
-//             }
-//           })
-//         }else if (val == 0) {
-//           console.log('downloading: mp4 xml');
-//           downloadFile(originalVideoName,baseurl).then(function(val){
-//             // 正常
-//             console.log('download success');
-//             transcodeVideo(originalVideoName,TranscodedVideoName).then(function(val){
-//               console.log('transcode success')
-//               saveXmlFileToDB(mid,originalXmlFileName,function(data){
-//                 if(data === 'ok'){
-//                   console.log('成功保存xml文件到数据库--success--返回视频和xml文件');
-//                   saveDBXmlFileToLocal(mid,function(data){
-//                     if(data === 'ok'){
-//                       res.json({
-//                         videoUrl : videoUrl,
-//                         xmlUrl   : xmlUrl
-//                       })
-//                     }
-//                   })
-//                 }else if(data === 'err'){
-//                   console.log('保存xml文件到数据库出错--error--只返回视频数据--');
-//                   res.json({videoUrl : videoUrl})
-//                 }
-//               })
-//             },function(val){
-//               console.log('transcode err');
-//               res.json({err:mid})
-//             })
-//           },function(val){
-//             // 异常
-//             console.log('download err');
-//             res.json({err:mid})
-//           })
-//         }
-//       })
-//     }
-//   })
-// }
-
-function checkLocalFile(dirPath,TranscodedVideoName) {
-  return new Promise(function(resolve, reject){
-    fs.readdir(dirPath,function(err, files){
-      var task = files.length
-      if (err) {
-        console.log(err);
-      }else if (task == 0) {
-        resolve(0)
-      }else{
-          files.forEach(function(file){
-          fs.stat(dirPath + file, function(err,stats){
-            task--
-            if(err){console.log(err);}
-            else if(stats.isFile()){
-              if(file == TranscodedVideoName){
-                resolve(1)
-              }else if(task == 0) {
-                resolve(0)
-              }
-            }else {
-              resolve(0)
-            }
-          })
-        })
-      }
-    })
-  })
-}
-
-function checkDbMid(mid){
-  return new Promise(function(resolve, reject){
-    Chat.find({video_id:mid},function(err,docs){
-      if(docs.length == 0){
-        console.log('数据库中没有相应的xml数据--重新从bilibili下载视频以及xml数据');
-        resolve(0)
-      }else {
-        console.log('数据库中存在相应数据，正在将数据重新生成xml');
-        resolve('n')
-      }
-    })
-  })
-}
-
-function downloadFile(TranscodedVideoName,baseurl){
-  return new Promise(function(resolve, reject){
-    var command = 'you-get  -o ./file/videos -O '+ TranscodedVideoName + ' ' + baseurl
-    const child = exec(command,function(error,stdout,stderr){
-      if(error){
-        console.log(error);
-        reject(Error('err'))
-      }
-      else if (stdout) {
-        var errFlag = stdout.search(/Error:/)
-        if (errFlag !== -1) {
-          console.log(stdout);
-          reject(Error('err'))
-        }
-        else {resolve('ok')}
-      }
-    })
-  })
-}
-
-function transcodeVideo(originalVideoName,TranscodedVideoName){
-  return new Promise(function(resolve, reject){
-    var command = 'cd file/videos && ffmpeg -i ' + originalVideoName + ' -codec copy ' + TranscodedVideoName
-    const Transcoding = exec(command,function(error,stdout,stderr){
-      if(error){reject(Error('err'))}
-      else{resolve('ok')}
-    })
-  })
-}
-
-function saveXmlFileToDB(mid,originalXmlFileName,callback){
-  Chat.remove({original_flag:'xml', video_id:mid},function(err,obj){
-    if(err){console.log(err);}
-    if(obj.result.n == 0){console.log('数据库中不存在该番号的弹幕数据，直接写入新数据');}
-    originalXmlFileNameWithPath = './file/videos/' + originalXmlFileName
-    var parser = new xml2js.Parser()
-    fs.readFile(originalXmlFileNameWithPath,function(err,data){
-      parser.parseString(data,function(err,result){
-        if(err){
-          console.log(err);
-          console.log('err0');
-          callback('err')
-        }else if(result && result.i.d){
-          var content = result.i.d
-          var task = content.length
-          for(var i = 0; i < content.length; i++){
-            task--
-            var msg = content[i]._
-            if(msg){
-              msg = msg.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, "")
-            }
-            var p = content[i].$.p
-            var chat = new Chat({
-              video_id:mid,
-              msg:msg,
-              p:p,
-              original_flag:'xml'
-            })
-            chat.save(function(err,doc){
-              if(err){console.log(err);}
-            })
-          }
-          if(task == 0){
-            console.log('xml to json 已保存到数据库');
-            callback('ok')
-          }
-        }else {
-          console.log('err2');
-          callback('err')
-        }
-      })
-
-    })
-  })
-}
-
-function saveDBXmlFileToLocal(mid,callback){
   var xmlHeader = {version:"1.0", encoding:"UTF-8"}
   Chat.find({video_id:mid},function(err,docs){
-    var xml = builder.create('i',xmlHeader)
-    xml.ele('chatserver','smkuse.com')
-    for(var i = 0; i < docs.length; i++){
-      var item = xml.ele('d',{'p':docs[i].p},docs[i].msg)
-    }
-    var xmlstring = xml.end({pretty:true})
-    var xmlFilePath = './file/videos/' + mid + '.xml'
-    fs.open(xmlFilePath,'w',function(err){
-      if(err){
-        console.log(err);
-        callback('err')
+    if(docs){
+      var xml = builder.create('i',xmlHeader)
+      xml.ele('chatserver','smkuse.com')
+      for(var i = 0; i < docs.length; i++){
+        var item = xml.ele('d',{'p':docs[i].p},docs[i].msg)
       }
-      fs.writeFile(xmlFilePath, xmlstring, function(err){
-        if(err){console.log(err);}
-        console.log('xml写入本地成功');
-        callback('ok')
+      var xmlstring = xml.end({pretty:true})
+      var xmlFilePath = './file/videos/' + mid + '.xml'
+      fs.open(xmlFilePath,'w',function(err){
+        if(err){
+          console.log(err);
+        }
+        fs.writeFile(xmlFilePath, xmlstring, function(err){
+          if(err){console.log(err);}
+          console.log('xml写入本地成功');
+          var xml = '/videos/' + mid + '.mp4'
+          Movie.findOne({mid:mid},function(err,movie){
+            if(err) console.log(err)
+            if(movie){
+              res.json({video_url:movie.video_url})
+            }
+            else res.json({err:a})
+          })
+        })
       })
-    })
+    }else {
+      Movie.findOne({mid:mid},function(err,movie){
+        if(err) console.log(err)
+        if(movie) res.json(movie)
+        else res.json({err:a})
+      })
+    }
   })
-}
+};
 
 exports.del = function(req, res) {
   var id = req.query.id
