@@ -260,7 +260,7 @@ exports.getList = function(req,res){
   var querystart = startTime + ' 00:00'
   var queryend = endTime + ' 24:00'
   Movie
-    .find({up_uploadtime:{$gte:querystart,$lt:queryend}})
+    .find({up_uploadtime:{$gte:querystart,$lt:queryend},video_url:{$exists:true}})
     .sort({rank:-1})
     .skip(20 * p)
     .limit(20)
@@ -300,7 +300,7 @@ exports.getVideo = function (req,res) {
             if(movie){
               res.json({video_url:movie.video_url})
             }
-            else res.json({err:a})
+            else res.json({err:et.a})
           })
         })
       })

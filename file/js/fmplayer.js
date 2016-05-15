@@ -5,7 +5,7 @@ $(function(){
   init()
   initGetList()
   clickGetList()
-
+  autoGetVideo()
   // var socket = io()
   // var $msgbox = $('.msg')
   // var info = {}
@@ -173,7 +173,6 @@ function init(){
     displayTime(currentTime)
   })
 
-
 }
 
 // 初始化播放列表
@@ -192,10 +191,12 @@ function initGetList(){
       for(var i = 0; i < data.length; i++){
         var title = data[i].title.slice(0,32)
         var mid = data[i].mid
-        html += "<a class = \" playbtn list-group-item\" id = "+ mid +">" + title + "</a>"
+        playerList = []
+        playerList.push(mid)
+        html += "<a class = \"playbtn list-group-item\" id = "+ mid +">" + title + "</a>"
       }
       $('.videolist').html(html)
-      getVideo()
+      clickGetVideo()
     }
   })
 }
@@ -208,34 +209,52 @@ function clickGetList() {
   })
 }
 
-// 获取视频
-function getVideo(mid){
+// 点击获取视频
+function clickGetVideo(mid){
   $('.playbtn').click(function(e){
     e.preventDefault()
     var target = $(this)
     var mid = target.attr('id')
-    $.ajax({
-      url:'/movie/getVideo',
-      type:'post',
-      data:{mid:mid},
-      dataType:'json',
-      success:function(data){
-        if(data.err){
-          console.log(data.err);
-        }else if(data.video_url) {
-          console.log('success');
-          $('source').attr('src',data.video_url)
-          var player = $('video').get(0)
-          player.pause()
-          player.load()
-          player.currentTime = 180
-          player.play()
-          danmuplayer(mid)
-        }else {
-          console.log('数据库中暂时还未同步相应数据');
-        }
+    getVideo(mid)
+  })
+}
+
+// 视频播放时-视频结束时转跳下一个视频
+function autoGetVideo(){
+  $('video').on('ended',function(){
+    var mid = $('a.list-group-item-success').next().attr('id')
+    if(mid){
+      getVideo(mid)
+    }
+  })
+}
+
+// ajax 请求电影数据
+function getVideo(mid){
+  $.ajax({
+    url:'/movie/getVideo',
+    type:'post',
+    data:{mid:mid},
+    dataType:'json',
+    success:function(data){
+      if(data.err){
+        console.log(data.err);
+      }else if(data.video_url) {
+        console.log('success');
+        $('a.list-group-item').each(function(){
+          $(this).removeClass('list-group-item-success')
+        })
+        $('#' + mid).addClass('list-group-item-success')
+        $('source').attr('src',data.video_url)
+        var player = $('video').get(0)
+        player.pause()
+        player.load()
+        player.play()
+        danmuplayer(mid)
+      }else {
+        console.log('数据库中暂时还未同步相应数据');
       }
-    })
+    }
   })
 }
 
@@ -275,10 +294,6 @@ function danmuplayer(mid){
     tmr = -1;
   })
 
-  // $('.VideoNext').click(function(){
-  //
-  // })
-
   $('video').on('play',function(){
     cm.startTimer();
   })
@@ -304,9 +319,6 @@ function danmuplayer(mid){
     cm.startTimer();
   })
 }
-
-
-
 
 // 下拉选择用户-自动补全名称
 function selectname(obj){
