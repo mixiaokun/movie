@@ -5,7 +5,7 @@ block content
       .input-group.col-sm-6
         .input-group-btn
           button.btn.btn-success.getTop 一键导入豆瓣TOP250数据
-      
+
   .container
     .row
       table.table
@@ -22,32 +22,32 @@ block content
           th 删除
           th 访问量
           th 海报
-        
+
         tbody
           each item in movies
             tr(class="item-id-#{item._id}")
               td.title #{item.title}
               td.doctor #{item.doctor}
               td.country #{item.country}
-              th.category 
+              th.category
                 if (item.category)
                   | #{item.category.name}
               td.year #{item.year}
               td #{moment(item.meta.createdAt).format('MM/DD/YYYY')}
-              td 
+              td
                 a(target="_blank", href="/movie/#{item._id}") 查看
-              td 
+              td
                 a(target="_blank", href="/movie/update/#{item._id}") 修改
-              td 
+              td
                 button.btn.btn-xs.btn-danger.del(tyep="button",data-id="#{item._id}") 删除
               td #{item.pv}
-              td 
+              td
                 if item.poster
                   a(href="#{item.poster}").showImage 预览
                 else
                   a(target="_blank", href="#") 上传海报
-  
-  script.    
+
+  script.
     $(function(){
       $('.getTop').click(function(){
         var start = 0
@@ -62,7 +62,7 @@ block content
           }
         },60*1000)
       });
-      
+
       $('.del').click(function(e){
         var target = $(e.target)
         var id = target.data('id')
@@ -79,13 +79,13 @@ block content
           }
         })
       })
-      
+
       $('.reRankYear').click(function(){
         console.log('---');
         window.location.href = window.location.href + '?rank=-1'
       })
     })
-    
+
     function Doajax(start,count){
       $.ajax({
         url:'https://api.douban.com/v2/movie/top250?start='+ start +'&count=' + count,
@@ -137,8 +137,7 @@ block content
               },
             })
             if(task >= results.subjects.length) clearInterval(child_interval)
-          }, 10*1000);        
+          }, 10*1000);
         }
       })
     }
-  

@@ -215,10 +215,6 @@ exports.updateMovies = function (req,res) {
   })
 };
 
-
-
-
-
 exports.bilidamku = function (req,res) {
   res.json({1:1})
   Movie
@@ -231,7 +227,7 @@ exports.bilidamku = function (req,res) {
         i++
         var mid = movies[i].mid
         console.log(mid);
-        
+
         var title = movies[i].title
         var oxn = title + '.cmt.xml'
         var oxnp = './file/videos/' + oxn
