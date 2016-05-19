@@ -50,13 +50,18 @@ block content
   script.
     $(function(){
       $('.getTop').click(function(){
-        var start = 0
+        var task = 0
+        var count = 100
+        //- setInterval 第一次执行的时候是会有延时的
+        //- 定时器内部不会出现task = 0 
+        Doajax(task * count, count)
         var interval = setInterval(function (){
-          start++
-          if(start < 2){
-            Doajax(start,100)
-          }else if (start == 2) {
-            Doajax(start,50)
+          task++
+          //- console.log(task);
+          if(task == 1){
+            Doajax(task * count, count)
+          }else if (task == 2) {
+            Doajax(task * count, 50)
           }else{
             clearInterval(interval)
           }
@@ -86,6 +91,7 @@ block content
       })
     })
 
+    //- 请求排行数据
     function Doajax(start,count){
       $.ajax({
         url:'https://api.douban.com/v2/movie/top250?start='+ start +'&count=' + count,
@@ -96,48 +102,54 @@ block content
         jsonp: 'callback',
         success:function(results){
           var task = 0
+          DoajaxAgain(task,results.subjects[task].id)
           var child_interval = setInterval(function () {
             task++
             var id = results.subjects[task].id
-            $.ajax({
-              url: 'https://api.douban.com/v2/movie/subject/' + id,
-              cache: true,
-              type: 'get',
-              dataType: 'jsonp',
-              crossDomain: true,
-              jsonp: 'callback',
-              success: function(data) {
-                var title = data.title
-                var doctor = data.directors[0].name
-                var country = data.countries[0]
-                var poster = data.images.large
-                var year = data.year
-                var summary = data.summary
-                var categoryName = data.genres[0]
-                $.ajax({
-                  type:'post',
-                  url:'/movie/saveBatch',
-                  data:{
-                    title:title,
-                    doctor:doctor,
-                    country:country,
-                    poster:poster,
-                    year:year,
-                    summary:summary,
-                    categoryName:categoryName
-                  },
-                  success:function(data1){
-                    if(data1.status === 200){
-                      console.log(start + ':' + task + 'ok');
-                    }else {
-                      console.log(data1.err);
-                    }
-                  }
-                })
-              },
-            })
+            DoajaxAgain(task,id)
             if(task >= results.subjects.length) clearInterval(child_interval)
           }, 10*1000);
         }
+      })
+    }
+    
+    //- 请求详细的电影信息
+    function DoajaxAgain(task,id){
+      $.ajax({
+        url: 'https://api.douban.com/v2/movie/subject/' + id,
+        cache: true,
+        type: 'get',
+        dataType: 'jsonp',
+        crossDomain: true,
+        jsonp: 'callback',
+        success: function(data) {
+          var title = data.title
+          var doctor = data.directors[0].name
+          var country = data.countries[0]
+          var poster = data.images.large
+          var year = data.year
+          var summary = data.summary
+          var categoryName = data.genres[0]
+          $.ajax({
+            type:'post',
+            url:'/movie/saveBatch',
+            data:{
+              title:title,
+              doctor:doctor,
+              country:country,
+              poster:poster,
+              year:year,
+              summary:summary,
+              categoryName:categoryName
+            },
+            success:function(data1){
+              if(data1.status === 200){
+                console.log(task + ' : ' + id + ' : ' + title + 'ok');
+              }else {
+                console.log(data1.err);
+              }
+            }
+          })
+        },
       })
     }

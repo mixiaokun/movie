@@ -157,6 +157,7 @@ exports.save = function(req,res){
 
 exports.savePoster = function(req, res, next) {
   var posterData = req.files.uploadPoster
+  // filePath 为在服务器中的路径，而非用户本地存放文件的路径
   var filePath = posterData.path
   var originalFilename = posterData.originalFilename
 
@@ -187,7 +188,6 @@ exports.saveBatch = function(req,res){
   var summary = req.body.summary
   var poster =req.body.poster
   var categoryName =req.body.categoryName
-
   Movie.findOne({title:title},function(err,savdMovie){
     if(err){console.log(err);}
     if(!savdMovie){
@@ -276,7 +276,7 @@ var et = {
 }
 
 exports.getVideo = function (req,res) {
-  
+
   var mid = req.body.mid || 'av4041068'
   var xmlHeader = {version:"1.0", encoding:"UTF-8"}
   Chat.find({video_id:mid},function(err,docs){
