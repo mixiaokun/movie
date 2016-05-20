@@ -185,7 +185,11 @@ exports.verify = function(req,res){
 
 exports.emailcode = function(req,res){
   var user = req.session.user
-  var Email = user.email
+  if(user){
+    var Email = user.email
+  }else {
+    var Email = false
+  }
   var email = req.body.email
   if(Email == email){
     User.findOne({email:email},function(err,user) {
