@@ -123,7 +123,7 @@ exports.bilidown = function (req,res) {
   res.json({'开始下载':'downloading---'})
   var errlist = []
   Movie
-    .find({up_uploadtime:{$gte:'2016-05-14 00:00'}})
+    .find({up_uploadtime:{$gte:'2016-05-20 00:00'}})
     .sort({hot:-1})
     .limit(20)
     .exec(function(err,docs){
