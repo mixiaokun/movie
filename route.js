@@ -53,6 +53,6 @@ module.exports = function(app){
 
   app.get('/bilispider',User.signinRequired,User.adminRequired,BiliApi.bilispider)
   app.get('/bilidown',User.signinRequired,User.adminRequired,BiliApi.bilidown)
-  app.get('/updateMovies',BiliApi.updateMovies)
+  app.get('/biliupdatemovies',BiliApi.updateMovies)
   app.get('/bilidamku',BiliApi.bilidamku)
 }

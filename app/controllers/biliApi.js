@@ -210,7 +210,7 @@ exports.updateMovies = function (req,res) {
 exports.bilidamku = function (req,res) {
   res.json({1:1})
   Movie
-    .find({up_uploadtime:{$gte:'2016-05-14 00:00',$lt:'2016-05-15 00:00'},xml:true})
+    .find({up_uploadtime:{$gte:'2016-05-20 00:00',$lt:'2016-05-21 00:00'},xml:true})
     .limit(20)
     .exec(function(err,movies){
       if(err) console.log(err);
