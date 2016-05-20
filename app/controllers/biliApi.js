@@ -52,18 +52,17 @@ exports.bilispider = function (req,res) {
       if(d == 13) return false
       var endTime = '2016-' + d + '-01'
       // 第一次请求获取当前排行榜中有多少页数据
-      var baseurl = 'http://www.bilibili.tv/list/' + rank + '-20-1-' + startTime + '~' + endTime +'-original.html'
+      var baseurl = 'http://www.bilibili.tv/list/' + rank + '-20-0-' + startTime + '~' + endTime +'-original.html'
       request(baseurl,function(error,response,body){
         var $ = cheerio.load(body)
-        var pageCount = $('.endPage').text
-
+        var pageCount = $('.endPage').text()
         // 爬取当前月份的所有数据
         var page = -1
         var timer = setInterval(function () {
           page++
           var SpiderUrl = 'http://www.bilibili.tv/list/' + rank + '-20-'+ page +'-' + startTime + '~' + endTime +'-original.html'
           request(SpiderUrl,function(error,response,body){
-            console.log('month:' + c + ' page:' + page + ' : ' + SpiderUrl);
+            console.log(pageCount + ' month:' + c + ' page:' + page + ' : ' + SpiderUrl);
             if (!error && response.statusCode == 200) {
               var $ = cheerio.load(body)
               var items = $('.vd-list').find('li')
@@ -113,9 +112,9 @@ exports.bilispider = function (req,res) {
             }
           })
           if(page >= (pageCount-1) ) clearInterval(timer)
-        }, 5000);
+        }, 10000);
       })
-      if(c == month) clearInterval(interval)
+      if(c >= month) clearInterval(interval)
     },30000)
   }
 };
