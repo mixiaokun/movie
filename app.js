@@ -38,11 +38,7 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }))
-app.use(function(req, res, next) {
-  var _user = req.session.user
-  app.locals.user = _user
-  next()
-})
+
 var env = process.env.NODE_ENV || 'development'
 if('development' === env){
   app.set('ShowStackError',true)
@@ -51,9 +47,9 @@ if('development' === env){
   // mongoose.set('debug',true)
 }
 
+// 定时任务
 var CronJob = require('cron').CronJob;
 var BiliSpider = require('./app/controllers/biliApi')
-
 var job = new CronJob({
   // Seconds: 0-59
   // Minutes: 0-59

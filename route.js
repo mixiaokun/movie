@@ -20,7 +20,7 @@ module.exports = function(app){
 
   app.post('/user/comment',User.saveComment)
 
-  app.get('/user/verify',User.signinRequired,User.verify)
+  app.get('/user/verify',User.verify)
   app.post('/user/emailcode',User.emailcode)
   app.get('/user/verifyemail',User.verifyemail)
 

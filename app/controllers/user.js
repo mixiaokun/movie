@@ -41,7 +41,7 @@ exports.signup = function(req,res){
     }else {
       // 是gmail邮箱请求
       if(user.email.search(/@gmail.com/) !== -1){
-        
+
         if(user.id_token === id_token){
           User.update({email:user.eamil},{$set:{status:'online'}},function(err,user){
             if(err){console.log(err);}
@@ -184,37 +184,43 @@ exports.verify = function(req,res){
 }
 
 exports.emailcode = function(req,res){
+  var user = req.session.user
+  var Email = user.email
   var email = req.body.email
-  User.findOne({email:email},function(err,user) {
-    if(err){console.log(err);}
-    if(!user){return res.json({result:'请输入正确的邮箱'})}
-    if(user.email_verify_flag){
-      return res.json({result:'您的邮箱已被验证过！'})
-    }else {
-      var K = user._id.toString()
-      var token = notp.totp.gen(K)
-      var queryurl = 'https://www.smkuse.info/user/verifyemail?email='+email+'&code='+token
-      var smtpConfig = {
-        service:'gmail',
-        auth: {
-          user: 'smkuse@gmail.com',
-          pass: 'Cos90=0941026?1'
-        }
-      };
-      var transporter = nodemailer.createTransport(smtpConfig)
-      var mailOptions = {
-          from: '"tanling" <smkuse@gmail.com>',
-          to: email,
-          subject: '邮箱验证',
-          text: '请不要将这个邮箱地址屏蔽',
-          html: '<b>请点击这个链接验证邮箱地址: </b><p>' + queryurl + '</p>'
-      };
-      transporter.sendMail(mailOptions, function(error, info){
-        if(error){  return console.log(error);}
-        res.json({result:'已经成功发送验证链接到您的注册邮箱『'+ email +'』'})
-      });
-    }
-  })
+  if(Email == email){
+    User.findOne({email:email},function(err,user) {
+      if(err){console.log(err);}
+      if(!user){return res.json({result:'请输入正确的邮箱'})}
+      if(user.email_verify_flag){
+        return res.json({result:'您的邮箱已被验证过！'})
+      }else {
+        var K = user._id.toString()
+        var token = notp.totp.gen(K)
+        var queryurl = 'https://www.smkuse.info/user/verifyemail?email='+email+'&code='+token
+        var smtpConfig = {
+          service:'gmail',
+          auth: {
+            user: 'smkuse@gmail.com',
+            pass: 'Cos90=0941026?1'
+          }
+        };
+        var transporter = nodemailer.createTransport(smtpConfig)
+        var mailOptions = {
+            from: '"tanling" <smkuse@gmail.com>',
+            to: email,
+            subject: '邮箱验证',
+            text: '请不要将这个邮箱地址屏蔽',
+            html: '<b>请点击这个链接验证邮箱地址: </b><p>' + queryurl + '</p>'
+        };
+        transporter.sendMail(mailOptions, function(error, info){
+          if(error){  return console.log(error);}
+          res.json({result:'已经成功发送验证链接到您的注册邮箱『'+ email +'』'})
+        });
+      }
+    })
+  }else {
+    res.json({result:'当前验证邮箱账号还未登录，请登录'})
+  }
 }
 
 exports.verifyemail = function(req,res){
