@@ -58,15 +58,12 @@ exports.bilispider = function (req,res) {
         var pageCount = $('.endPage').text
 
         // 爬取当前月份的所有数据
-        var page = 0
-        var interval1 = setInterval(function () {
+        var page = -1
+        var timer = setInterval(function () {
           page++
-
-          console.log('month:' + c + ' page:' + page);
           var SpiderUrl = 'http://www.bilibili.tv/list/' + rank + '-20-'+ page +'-' + startTime + '~' + endTime +'-original.html'
           request(SpiderUrl,function(error,response,body){
-
-            console.log(SpiderUrl);
+            console.log('month:' + c + ' page:' + page + ' : ' + SpiderUrl);
             if (!error && response.statusCode == 200) {
               var $ = cheerio.load(body)
               var items = $('.vd-list').find('li')
@@ -75,17 +72,13 @@ exports.bilispider = function (req,res) {
                 var id = video.attr('href').split('/video/')[1].split('/')[0]
                 var title = video.attr('title').trim().replace(/[\r\n]/g,"")
                 var summary = $(this).find('.v-desc').text().replace(/[\r\n]/g,"")
-
                 var hot = $(this).find('.gk > span').text()
                 var damku = $(this).find('.dm > span').text()
                 var stow = $(this).find('.sc > span').text()
-
                 var up_id = $(this).find('.up-info > a').attr('href').split('.com/')[1]
                 var up_name = $(this).find('.up-info > a').text()
                 var up_uploadtime = $(this).find('.up-info > span').text()
-                console.log(id + ' : ' + title);
-                console.log('hot: ' + hot + 'damku: ' + damku + 'stow: ' + stow);
-                console.log(up_id + up_name + up_uploadtime);
+                console.log(id + ' : ' + up_uploadtime + ' : ' + ' hot: ' + hot + ' damku: ' + damku + ' stow: ' + stow);
                 Movie.findOne({mid:id},function(err,movie){
                   if(err){console.log(err);}
                   if(!movie){
@@ -119,7 +112,7 @@ exports.bilispider = function (req,res) {
               })
             }
           })
-          if(page == pageCount) clearInterval(interval1)
+          if(page >= (pageCount-1) ) clearInterval(timer)
         }, 5000);
       })
       if(c == month) clearInterval(interval)
