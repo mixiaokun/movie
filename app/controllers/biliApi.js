@@ -34,20 +34,20 @@ exports.bilispider = function (req,res) {
   // 投稿时间：default(越新放在越前面)
   var rank = 'stow'
   var year = new Date().getFullYear()
-  var month = new Date().getMonth()
+  var month = new Date().getMonth() + 1
   var date = new Date().getDate()
-  month = month + 1
   month = month > 9 ? month : '0' + month
   date = date > 9 ? date : '0' + date
   var updatetime = year + '-' + month + '-' + date
 
   if(year == 2016){
+    // c 月份
     var c = 0
     var interval = setInterval(function(){
       c++
+      var d = c + 1
       c = c > 9 ? c : '0' + c
       var startTime = '2016-' + c + '-01'
-      d = parseInt(c) + 1
       d = d > 9 ? d : '0' + d
       if(d == 13) return false
       var endTime = '2016-' + d + '-01'
@@ -122,7 +122,7 @@ exports.bilispider = function (req,res) {
           if(page == pageCount) clearInterval(interval1)
         }, 5000);
       })
-      if(c == month-1) clearInterval(interval)
+      if(c == month) clearInterval(interval)
     },30000)
   }
 };

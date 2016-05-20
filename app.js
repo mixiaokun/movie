@@ -39,6 +39,12 @@ app.use(session({
   saveUninitialized: true
 }))
 
+app.use(function(req, res, next) {
+   var _user = req.session.user
+   app.locals.user = _user
+   next()
+})
+
 var env = process.env.NODE_ENV || 'development'
 if('development' === env){
   app.set('ShowStackError',true)

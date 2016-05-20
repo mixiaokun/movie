@@ -6,75 +6,68 @@ $(function(){
   initGetList()
   clickGetList()
   autoGetVideo()
-  // var socket = io()
-  // var $msgbox = $('.msg')
-  // var info = {}
-  // info.mid = mid
-  // info.name = $('.getname').text()
-  // if(info.name !== '请登录'){
-  //   socket.emit('join',info)
-  // }
-  // socket.on('usernames', function(data){
-  //   var html = '';
-  //   for(var i=0; i < data.length; i++){
-  //     html += "<li class=\"list-group-item\">" + data[i] + "</li>"
-  //   }
-  //   $('.userlist').html(html);
-  // });
-  //
-  // if(Cookies.get('name')){
-  //   $('.msg').keypress(function(e) {
-  //     if(e.which == 13) {
-  //       var info = {}
-  //       info.chanel = mid
-  //       info.msg = $msgbox.val()
-  //       socket.emit('send message', info, function(data){
-  //         displayError(data)
-  //       })
-  //       $('.msg').val('');
-  //       $('.dropdownUserlist').html('')
-  //     }
-  //   });
-  //
-  //   $('.sendmsg').click(function(e){
-  //     e.preventDefault();
-  //     var info = {}
-  //     info.chanel = mid
-  //     info.msg = $msgbox.val()
-  //     socket.emit('send message', info, function(data){
-  //       displayError(data)
-  //     })
-  //     $('.msg').val('');
-  //     $('.dropdownUserlist').html('')
-  //   })
-  // }
-  //
-  // $('video').on('ended',function(){
-  //   socket.disconnect()
-  // })
-  //
-  // socket.on('new message', function(data){
-  //   displayMsg(data);
-  // });
-  //
-  // socket.on('whisper',function(data){
-  //   displayWhisper(data)
-  // })
-  //
-  // socket.on('load old msgs',function(docs){
-  //   for(var i = docs.length - 1; i >= 0; i--){
-  //     displayMsg(docs[i]);
-  //   }
-  // })
-  //
-  // socket.on('load old secmsg',function(docs){
-  //   for(var i = docs.length - 1; i >= 0; i--){
-  //     displayWhisper(docs[i]);
-  //   }
-  // })
+  chat()
 })
 
+function chat(){
+  var socket = io()
+  var $msgbox = $('.msg')
+  var name = $('.getname').text()
+  if(name !== '请登录'){
+    socket.emit('join',name)
+  }
+  socket.on('usernames', function(data){
+    var html = '';
+    for(var i=0; i < data.length; i++){
+      html += "<li class=\"list-group-item\">" + data[i] + "</li>"
+    }
+    $('.userlist').html(html);
+  });
 
+  if(Cookies.get('name')){
+    $('.msg').keypress(function(e) {
+      if(e.which == 13) {
+        var msg = $msgbox.val()
+        socket.emit('send message', msg, function(data){
+          displayError(data)
+        })
+        $('.msg').val('');
+        $('.dropdownUserlist').html('')
+      }
+    });
+
+    $('.sendmsg').click(function(e){
+      e.preventDefault();
+
+      var msg = $msgbox.val()
+      socket.emit('send message', msg, function(data){
+        displayError(data)
+      })
+      $('.msg').val('');
+      $('.dropdownUserlist').html('')
+    })
+  }
+
+  socket.on('new message', function(data){
+    displayMsg(data);
+  });
+
+  socket.on('whisper',function(data){
+    displayWhisper(data)
+  })
+
+  socket.on('load old msgs',function(docs){
+    for(var i = docs.length - 1; i >= 0; i--){
+      displayMsg(docs[i]);
+    }
+  })
+
+  socket.on('load old secmsg',function(docs){
+    for(var i = docs.length - 1; i >= 0; i--){
+      displayWhisper(docs[i]);
+    }
+  })
+}
 
 // 展示评论消息
 function displayMsg(data){
