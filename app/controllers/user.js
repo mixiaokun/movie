@@ -39,7 +39,9 @@ exports.signup = function(req,res){
         }
       })
     }else {
+      // 是gmail邮箱请求
       if(user.email.search(/@gmail.com/) !== -1){
+        
         if(user.id_token === id_token){
           User.update({email:user.eamil},{$set:{status:'online'}},function(err,user){
             if(err){console.log(err);}
