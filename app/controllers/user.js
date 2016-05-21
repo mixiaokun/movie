@@ -43,17 +43,11 @@ exports.signup = function(req,res){
       if(user.email.search(/@gmail.com/) !== -1){
 
         console.log(user.id_token);
-        
-        if(user.id_token === id_token){
-          User.update({email:user.eamil},{$set:{status:'online'}},function(err,user){
-            if(err){console.log(err);}
-            req.session.user = user
-            res.cookie('name', user.name, {expires: new Date(Date.now() + 10*24*60*60*1000)})
-            res.json({success:'成功通过google登录！'})
-          })
-        }else{
-          res.json({err:'请重新刷新页面'})
-        }
+
+        req.session.user = user
+        res.cookie('name', user.name, {expires: new Date(Date.now() + 10*24*60*60*1000)})
+        res.json({success:'成功通过google登录！'})
+
       }else {
         res.json({err:"输入的邮箱已被注册，您可以选择登录"})
       }
