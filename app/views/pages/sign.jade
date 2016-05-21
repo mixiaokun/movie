@@ -113,6 +113,9 @@ block content
       var name = profile.getName();
       var email = profile.getEmail();
       var image_url = profile.getImageUrl();
+      
+      console.log(id_token);
+      
       $.ajax({
         type:"POST",
         url:"/user/signup",
