@@ -50,22 +50,9 @@ block content
   script.
     $(function(){
       $('.getTop').click(function(){
-        var task = 0
-        var count = 100
-        //- setInterval 第一次执行的时候是会有延时的
-        //- 定时器内部不会出现task = 0 
-        Doajax(task * count, count)
-        var interval = setInterval(function (){
-          task++
-          //- console.log(task);
-          if(task == 1){
-            Doajax(task * count, count)
-          }else if (task == 2) {
-            Doajax(task * count, 50)
-          }else{
-            clearInterval(interval)
-          }
-        },60*1000)
+        Doajax(0, 99)
+        Doajax(100,199)
+        Doajax(200,249)
       });
 
       $('.del').click(function(e){
@@ -101,13 +88,13 @@ block content
         crossDomain: true,
         jsonp: 'callback',
         success:function(results){
-          var task = 0
-          DoajaxAgain(task,results.subjects[task].id)
+          var task = -1
+          var length = results.subjects.length
           var child_interval = setInterval(function () {
             task++
             var id = results.subjects[task].id
             DoajaxAgain(task,id)
-            if(task >= results.subjects.length) clearInterval(child_interval)
+            if(task >= length) clearInterval(child_interval)
           }, 10*1000);
         }
       })

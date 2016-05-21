@@ -66,6 +66,5 @@ exports.search = function (req,res) {
           movies: results
         })
       })
-
   }
 };
