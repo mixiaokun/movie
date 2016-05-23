@@ -317,6 +317,10 @@ exports.changepasswd = function(req,res){
 
 exports.saveComment = function(req,res){
   var _comment = req.body.comment
+  // movie
+  // from
+  // toid userid tid
+  // comment id  cid
   var movieId = _comment.movie
   if(_comment.cid){
     Comment.findById(_comment.cid,function(err,comment){
