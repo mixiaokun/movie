@@ -144,7 +144,7 @@ function init(){
     }
     if(text.substr(0,3) === '/w '){
       for(var j = 0; j < userlist.length; j++){
-        html += "<li class = \"list-group-item\" onclick=\"selectname()\">" + userlist[j] + "</li>"
+        html += "<li class = \"list-group-item\" onclick=\"selectname(this)\">" + userlist[j] + "</li>"
       }
       $('.dropdownUserlist').html(html)
     }else{
