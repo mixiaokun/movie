@@ -13,7 +13,7 @@ module.exports = function(server){
       Chat.find({msg_to:name},function(err,docs){
         socket.emit('load old secmsg',docs)
       })
-      Chat.find({},function(err,docs){
+      Chat.find({video_id:{$exists:false}},function(err,docs){
         socket.emit('load old msgs',docs)
       })
     })
