@@ -220,7 +220,7 @@ exports.bilidamku = function (req,res) {
         var mid = movies[i].mid
         console.log(mid);
         var title = movies[i].title
-        Chat.remove({title:title},function(err){
+        Chat.remove({video_id:mid},function(err){
           if(err) console.log(err);
 
           var oxn = title + '.cmt.xml'
