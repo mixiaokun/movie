@@ -255,6 +255,7 @@ function getVideo(mid){
 function danmuplayer(mid){
   var cm = new CommentManager($('.commentContent').get(0));
   cm.init();
+  cm.clear();
   var tmr = -1;//定时器
   var start = 0;
   var playhead = 0;//当前播放进度
@@ -302,6 +303,7 @@ function danmuplayer(mid){
 
   $('video').on('ended',function(){
     cm.stopTimer();
+    cm.clear();
   })
 
   $('video').on('waiting',function(){
