@@ -280,7 +280,9 @@ function danmuplayer(mid){
     e.preventDefault()
     console.log('clear');
     $('video').get(0).pause()
-    cm.clear();
+    cm.clear()
+    start = 0
+    clearTimeout(tmr)
   })
 
   // 视频播放控制，视频的状态会传递给弹幕播放器，弹幕播放器根据传递的事件控制弹幕的展示效果
