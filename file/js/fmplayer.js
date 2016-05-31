@@ -279,6 +279,7 @@ function danmuplayer(mid){
   $('.playbtn').click(function(e){
     e.preventDefault()
     console.log('clear');
+    $('video').get(0).pause()
     cm.clear();
   })
 
