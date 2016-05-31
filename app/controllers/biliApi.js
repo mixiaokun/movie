@@ -210,7 +210,7 @@ exports.updateMovies = function (req,res) {
 exports.bilidamku = function (req,res) {
   res.json({1:1})
   Movie
-    .find({up_uploadtime:{$gte:'2016-05-20 00:00',$lt:'2016-05-21 00:00'},xml:true})
+    .find({up_uploadtime:{$gte:'2016-05-20 00:00',$lt:'2016-05-30 00:00'},xml:true})
     .limit(20)
     .exec(function(err,movies){
       if(err) console.log(err);
@@ -219,39 +219,41 @@ exports.bilidamku = function (req,res) {
         i++
         var mid = movies[i].mid
         console.log(mid);
-
         var title = movies[i].title
-        var oxn = title + '.cmt.xml'
-        var oxnp = './file/videos/' + oxn
-        var parser = new xml2js.Parser()
+        Chat.remove({title:title},function(err){
+          if(err) console.log(err);
 
-        fs.readFile(oxnp,function(err,data){
-          if(data) {
-            parser.parseString(data,function(err,result){
-              if(err) console.log(err)
-              else if(result && result.i.d){
-                var content = result.i.d
-                var task = content.length
-                console.log(task);
+          var oxn = title + '.cmt.xml'
+          var oxnp = './file/videos/' + oxn
+          var parser = new xml2js.Parser()
+          fs.readFile(oxnp,function(err,data){
+            if(data) {
+              parser.parseString(data,function(err,result){
+                if(err) console.log(err)
+                else if(result && result.i.d){
+                  var content = result.i.d
+                  var task = content.length
+                  console.log(task);
 
-                for(var i = 0; i < task; i++){
-                  // console.log(mid + ' : ' +task + ' : ' + i);
-                  var msg = content[i]._
-                  if(msg) msg = msg.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, "")
-                  var p = content[i].$.p
-                  var chat = new Chat({
-                    video_id:mid,
-                    msg:msg,
-                    p:p,
-                    original_flag:'xml'
-                  })
-                  chat.save(function(err,doc){
-                    if(err){console.log(err);}
-                  })
-                }
-              }else console.log('err')
-            })
-          }else console.log('err: ' + mid)
+                  for(var i = 0; i < task; i++){
+                    // console.log(mid + ' : ' +task + ' : ' + i);
+                    var msg = content[i]._
+                    if(msg) msg = msg.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, "")
+                    var p = content[i].$.p
+                    var chat = new Chat({
+                      video_id:mid,
+                      msg:msg,
+                      p:p,
+                      original_flag:'xml'
+                    })
+                    chat.save(function(err,doc){
+                      if(err){console.log(err);}
+                    })
+                  }
+                }else console.log('err')
+              })
+            }else console.log('err: ' + mid)
+          })
         })
         if(i >= movies.length-1) clearInterval(interval)
       }, 1000);
