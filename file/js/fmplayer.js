@@ -276,8 +276,9 @@ function danmuplayer(mid){
   })
 
   // 检测列表点击事件，清除屏幕弹幕
-  $('playbtn').click(function(e){
+  $('.playbtn').click(function(e){
     e.preventDefault()
+    console.log('clear');
     cm.clear();
   })
 
