@@ -255,7 +255,6 @@ function getVideo(mid){
 function danmuplayer(mid){
   var cm = new CommentManager($('.commentContent').get(0));
   cm.init();
-  cm.clear();
   var tmr = -1;//定时器
   var start = 0;
   var playhead = 0;//当前播放进度
@@ -274,6 +273,12 @@ function danmuplayer(mid){
         cm.time(Math.floor(currentTime * 1000));;
       },100)
     }
+  })
+
+  // 检测列表点击事件，清除屏幕弹幕
+  $('playbtn').click(function(e){
+    e.preventDefault()
+    cm.clear();
   })
 
   // 视频播放控制，视频的状态会传递给弹幕播放器，弹幕播放器根据传递的事件控制弹幕的展示效果
